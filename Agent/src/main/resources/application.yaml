@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: AiAgentTest
+  main:
+    allow-bean-definition-overriding: true
+
+server:
+  port: 28081
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+wcdk:
+  agent:
+    ollama:
+      base-url: http://localhost:11434
+      models:
+        - deepseek-r1:7b
+      route-models:
+        chat: deepseek-r1
+      timeout-seconds: 120
+      training-model-prefix: deepseek-r1-wcdk
+    system-prompt: >
+      你是一个简洁、可靠的 AI 助手。优先使用中文回答，回答要直接、准确、可执行。
+    max-history-messages: 12
+  rules:
+    drools:
+      decision-rule-path: classpath:rules/rules.drl
+    model: D:/Dl4jSource
+  document:
+    source-directory: D:/dssource
+    chunk-size: 900
+    chunk-overlap: 120
