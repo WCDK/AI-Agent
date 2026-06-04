@@ -19,6 +19,7 @@ public class WcdkProperties {
     @Data
     public static class Agent {
         private final Ollama ollama = new Ollama();
+        private final Tts tts = new Tts();
         private String systemPrompt = "你是一个简洁、可靠的 AI 助手。优先使用中文回答，回答要直接、准确、可执行。";
         private int maxHistoryMessages = 12;
     }
@@ -33,6 +34,14 @@ public class WcdkProperties {
         private double intentSwitchConfidence = 0.6D;
         private long timeoutSeconds = 120;
         private String trainingModelPrefix = "deepseek-r1-doc";
+    }
+
+    @Data
+    public static class Tts {
+        private String command = "edge-tts";
+        private String voice = "zh-CN-XiaoxiaoNeural";
+        private int timeoutSeconds = 30;
+        private int maxTextLength = 2000;
     }
 
     @Data

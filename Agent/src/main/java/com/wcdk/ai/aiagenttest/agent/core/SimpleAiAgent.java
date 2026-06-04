@@ -2,6 +2,7 @@ package com.wcdk.ai.aiagenttest.agent.core;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -27,6 +28,7 @@ public class SimpleAiAgent {
     private final OllamaModelRouter ollamaModelRouter;
     private final AgentPipeline agentPipeline;
     private final KnowledgeBaseService knowledgeBaseService;
+    private final EdgeTtsService edgeTtsService;
     private final ConcurrentMap<String, List<OllamaMessage>> sessions = new ConcurrentHashMap<>();
 
     public SimpleAiAgent(
@@ -34,13 +36,15 @@ public class SimpleAiAgent {
             OllamaChatClient ollamaChatClient,
             OllamaModelRouter ollamaModelRouter,
             AgentPipeline agentPipeline,
-            KnowledgeBaseService knowledgeBaseService
+            KnowledgeBaseService knowledgeBaseService,
+            EdgeTtsService edgeTtsService
     ) {
         this.properties = properties;
         this.ollamaChatClient = ollamaChatClient;
         this.ollamaModelRouter = ollamaModelRouter;
         this.agentPipeline = agentPipeline;
         this.knowledgeBaseService = knowledgeBaseService;
+        this.edgeTtsService = edgeTtsService;
     }
 
     public AgentHealthResponse health() {
@@ -107,6 +111,7 @@ public class SimpleAiAgent {
             }
             agentPipeline.learn(sessionId, userMessage, pipelineResult.decision(), answer);
 
+            sendAudioEvent(emitter, sessionId, model, modelRoute, answer);
             sendEvent(emitter, "done", new ChatStreamEvent("done", sessionId, model, modelRoute, ""));
             emitter.complete();
         } catch (Exception exception) {
@@ -115,6 +120,20 @@ public class SimpleAiAgent {
             } finally {
                 emitter.completeWithError(exception);
             }
+        }
+    }
+
+    private void sendAudioEvent(SseEmitter emitter, String sessionId, String model, String modelRoute, String answer) {
+        if (!StringUtils.hasText(answer)) {
+            return;
+        }
+
+        try {
+            var audio = edgeTtsService.synthesize(new TtsRequest(answer, null));
+            var audioBase64 = Base64.getEncoder().encodeToString(audio);
+            sendEvent(emitter, "audio", new ChatStreamEvent("audio", sessionId, model, modelRoute, audioBase64));
+        } catch (Exception exception) {
+            sendEvent(emitter, "audio-error", new ChatStreamEvent("audio-error", sessionId, model, modelRoute, exception.getMessage()));
         }
     }
 

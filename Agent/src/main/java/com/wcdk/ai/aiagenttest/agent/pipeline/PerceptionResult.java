@@ -5,6 +5,7 @@ public record PerceptionResult(
         int tokenCount,
         boolean question,
         boolean command,
+        boolean image,
         boolean risky,
         boolean chinese
 ) {

@@ -32,9 +32,17 @@ public class PerceptionModule {
                 || lower.contains("remove all")
                 || normalized.contains("删除")
                 || normalized.contains("清空");
+        var image = lower.contains("image")
+                || lower.contains("picture")
+                || lower.contains("draw")
+                || lower.contains("generate")
+                || normalized.contains("图片")
+                || normalized.contains("图像")
+                || normalized.contains("画")
+                || normalized.contains("生成图");
         var chinese = normalized.codePoints().anyMatch(codePoint ->
                 Character.UnicodeScript.of(codePoint) == Character.UnicodeScript.HAN);
 
-        return new PerceptionResult(normalized, tokenCount, question, command, risky, chinese);
+        return new PerceptionResult(normalized, tokenCount, question, command, image, risky, chinese);
     }
 }

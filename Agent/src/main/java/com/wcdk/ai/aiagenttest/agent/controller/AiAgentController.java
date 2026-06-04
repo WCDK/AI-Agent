@@ -4,7 +4,9 @@ import java.nio.file.Path;
 
 import com.wcdk.ai.aiagenttest.agent.core.AgentHealthResponse;
 import com.wcdk.ai.aiagenttest.agent.core.ChatRequest;
+import com.wcdk.ai.aiagenttest.agent.core.EdgeTtsService;
 import com.wcdk.ai.aiagenttest.agent.core.SimpleAiAgent;
+import com.wcdk.ai.aiagenttest.agent.core.TtsRequest;
 import com.wcdk.ai.aiagenttest.agent.document.DocumentTrainingResponse;
 import com.wcdk.ai.aiagenttest.agent.document.DocumentTrainingService;
 import com.wcdk.ai.aiagenttest.agent.pipeline.Dl4jInferenceModule;
@@ -36,17 +38,20 @@ public class AiAgentController {
     private final SimpleAiAgent aiAgent;
     private final Dl4jInferenceModule inferenceModule;
     private final DocumentTrainingService documentTrainingService;
+    private final EdgeTtsService edgeTtsService;
     private final WcdkProperties properties;
 
     public AiAgentController(
             SimpleAiAgent aiAgent,
             Dl4jInferenceModule inferenceModule,
             DocumentTrainingService documentTrainingService,
+            EdgeTtsService edgeTtsService,
             WcdkProperties properties
     ) {
         this.aiAgent = aiAgent;
         this.inferenceModule = inferenceModule;
         this.documentTrainingService = documentTrainingService;
+        this.edgeTtsService = edgeTtsService;
         this.properties = properties;
     }
 
@@ -66,6 +71,15 @@ public class AiAgentController {
                 .header("X-Accel-Buffering", "no")
                 .header("Cache-Control", "no-cache, no-transform")
                 .body(aiAgent.chatStream(request));
+    }
+
+    @PostMapping(value = "/tts", produces = "audio/mpeg")
+    @Operation(summary = "Text to speech", description = " Edge TTS 转MP3")
+    public ResponseEntity<byte[]> synthesizeSpeech(@Valid @RequestBody TtsRequest request) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.valueOf("audio/mpeg"))
+                .cacheControl(CacheControl.noStore())
+                .body(edgeTtsService.synthesize(request));
     }
 
     @PostMapping("/train")

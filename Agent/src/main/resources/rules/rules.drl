@@ -19,6 +19,19 @@ then
   ));
 end
 
+rule "generate image request"
+  salience 90
+when
+  $p: PerceptionResult(image == true)
+then
+  decision.set(new DecisionResult(
+    "GENERATE_IMAGE",
+    "image",
+    "用户需要生成图片。请根据用户描述生成可用于图像模型的清晰提示词。",
+    true
+  ));
+end
+
 rule "execute task request"
   salience 80
 when

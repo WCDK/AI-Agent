@@ -26,6 +26,7 @@ public class KnowledgeBaseService {
     private static final String LEGACY_INDEX_FILE_NAME = "knowledge-base.jsonl";
     private static final String INDEX_FILE_PREFIX = "knowledge-base-";
     private static final String INDEX_FILE_SUFFIX = ".jsonl";
+    private static final String KNOWLEDGE_DIRECTORY_NAME = "knowledge";
     private static final long MAX_INDEX_FILE_BYTES = 40L * 1024L * 1024L;
     private static final int DEFAULT_LIMIT = 5;
 
@@ -218,7 +219,7 @@ public class KnowledgeBaseService {
     }
 
     private Path indexDirectory() {
-        return Path.of(properties.getDocument().getSourceDirectory());
+        return Path.of(properties.getDocument().getSourceDirectory()).resolve(KNOWLEDGE_DIRECTORY_NAME);
     }
 
     private Path shardPath(int shardNumber) {

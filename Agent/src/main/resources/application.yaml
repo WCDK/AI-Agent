@@ -26,6 +26,12 @@ wcdk:
     system-prompt: >
       你是一个简洁、可靠的 AI 助手。优先使用中文回答，回答要直接、准确、可执行。
     max-history-messages: 12
+    tts:
+      command: edge-tts
+      voice: zh-CN-XiaoxiaoNeural
+#      voice: zh-CN-XiaoyiNeural
+      timeout-seconds: 30
+      max-text-length: 2000
   rules:
     drools:
       decision-rule-path: classpath:rules/rules.drl
