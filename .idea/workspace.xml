@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="95c6f9da-2177-466c-8a81-9ba29832e3da" name="Changes" comment="sd.webui txt2img">
+      <change afterPath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/GeneratedImage.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/SdWebuiClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/controller/AiAgentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/controller/AiAgentController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/AgentExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/AgentExceptionHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/AgentHealthResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/AgentHealthResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/AgentUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/AgentUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/ChatRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/ChatRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/ChatResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/ChatResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/ChatStreamEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/ChatStreamEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/EdgeTtsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/EdgeTtsService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/OllamaChatClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/OllamaChatClient.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager">
+    <option name="groupingKeys">
+      <option value="directory" />
+      <option value="module" />
+      <option value="repository" />
+    </option>
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="67" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;WCDK&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/WCDK/AI-Agent.git&quot;,
+    &quot;accountId&quot;: &quot;a6a4e000-fa48-43b2-a237-15b0766221da&quot;
+  }
+}</component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="useMavenConfig" value="false" />
+        <option name="userSettingsFile" value="D:\util\maven\apache-maven-3.9.11\conf\settings.xml" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="MavenRunner">
+    <option name="jreName" value="21" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
+  <component name="ProjectId" id="3EKsgPxBN5LMXsdNXNcN8JPcdTJ" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Maven.Agent [clean].executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "Spring Boot.AiAgentTestApplication.executor": "Debug",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "dev",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "E:/work/AI-Agent",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "editing.templates",
+    "to.speed.mode.migration.done": "true",
+    "ts.external.directory.path": "D:\\util\\idea\\idea-2026.1.1.win\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
+    "ultimate.editor.notification.dismissed.VueFreeTierEditorNotificationProvider": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\work\Agent\AiAgentTest\src\main\resources\rules" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="configurationTypes">
+      <set>
+        <option value="SpringBootApplicationConfigurationType" />
+      </set>
+    </option>
+    <option name="configurationStatuses">
+      <map>
+        <entry key="SpringBootApplicationConfigurationType">
+          <value>
+            <map>
+              <entry key="AiAgentTestApplication" value="STOPPED" />
+            </map>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="RunManager">
+    <configuration name="AiAgentTestApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="Agent" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.wcdk.ai.aiagenttest.AiAgentTestApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="95c6f9da-2177-466c-8a81-9ba29832e3da" name="Changes" comment="" />
+      <created>1779938706845</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1779938706845</updated>
+      <workItem from="1779938707918" duration="16440000" />
+      <workItem from="1779963628708" duration="3815000" />
+      <workItem from="1780017060168" duration="11738000" />
+      <workItem from="1780275488631" duration="6506000" />
+      <workItem from="1780296591605" duration="2961000" />
+      <workItem from="1780365597431" duration="15429000" />
+      <workItem from="1780536785418" duration="13734000" />
+      <workItem from="1780559240085" duration="509000" />
+      <workItem from="1780559769001" duration="6576000" />
+      <workItem from="1780970861079" duration="9226000" />
+      <workItem from="1780991020773" duration="6286000" />
+    </task>
+    <task id="LOCAL-00001" summary="1">
+      <option name="closed" value="true" />
+      <created>1780557905117</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1780557905117</updated>
+    </task>
+    <task id="LOCAL-00002" summary="1">
+      <option name="closed" value="true" />
+      <created>1780564490276</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1780564490276</updated>
+    </task>
+    <task id="LOCAL-00003" summary="1">
+      <option name="closed" value="true" />
+      <created>1780564817272</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1780564817272</updated>
+    </task>
+    <task id="LOCAL-00004" summary="sd.webui txt2img">
+      <option name="closed" value="true" />
+      <created>1781076062283</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1781076062283</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="1" />
+    <MESSAGE value="sd.webui txt2img" />
+    <option name="LAST_COMMIT_MESSAGE" value="sd.webui txt2img" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/controller/AiAgentController.java</url>
+          <line>102</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/document/DocumentTrainingService.java</url>
+          <line>49</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/document/DocumentTrainingService.java</url>
+          <line>49</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/document/DocumentParser.java</url>
+          <line>23</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/AgentUtil.java</url>
+          <line>29</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/document/KnowledgeBaseService.java</url>
+          <line>45</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/SimpleAiAgent.java</url>
+          <line>70</line>
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/core/OllamaModelRouter.java</url>
+          <line>65</line>
+          <option name="timeStamp" value="10" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/Agent/src/main/java/com/wcdk/ai/aiagenttest/agent/document/KnowledgeBaseService.java</url>
+          <line>97</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

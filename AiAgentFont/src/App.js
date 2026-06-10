@@ -28,7 +28,8 @@ export default {
       copiedMessageId: null,
       copyResetTimer: null,
       speakingMessageId: null,
-      speechUtterance: null,
+      audioElement: null,
+      audioObjectUrl: null,
       autoScrollToBottom: true,
       nextId: 1,
       healthPollTimer: null,
@@ -42,6 +43,14 @@ export default {
     };
   },
   computed: {
+    pageTitle() {
+      const titles = {
+        chat: '智能对话',
+        train: '意图模型训练',
+        document: '文档资料库训练',
+      };
+      return titles[this.activeTab] || '智能体控制台';
+    },
     healthStatusText() {
       return this.health && this.health.status ? this.health.status : 'UNKNOWN';
     },
@@ -66,7 +75,7 @@ export default {
     this.checkHealth();
     this.healthPollTimer = window.setInterval(() => {
       this.checkHealth();
-    }, 10000);
+    }, 60000);
   },
   beforeDestroy() {
     if (this.healthPollTimer) {
@@ -98,6 +107,7 @@ export default {
         roleLabel,
         content,
         images,
+        audioB64: '',
         thinking: '',
         showThinking: false,
         hasVisibleContent: false,
@@ -106,12 +116,15 @@ export default {
       this.chatLog.push(item);
       return item;
     },
-    updateMessage(entry, { content, images, thinking, showThinking, hasVisibleContent } = {}) {
+    updateMessage(entry, { content, images, audioB64, thinking, showThinking, hasVisibleContent } = {}) {
       if (typeof content === 'string') {
         entry.content = content;
       }
       if (Array.isArray(images)) {
         entry.images = images;
+      }
+      if (typeof audioB64 === 'string') {
+        entry.audioB64 = audioB64;
       }
       if (typeof thinking === 'string') {
         entry.thinking = thinking;
@@ -235,12 +248,8 @@ export default {
         throw new Error('复制失败。');
       }
     },
-    playMessageAudio(item) {
+    async playMessageAudio(item) {
       if (!item || !item.content || !item.content.trim()) {
-        return;
-      }
-      if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
-        this.error = '当前浏览器不支持语音播放。';
         return;
       }
       if (this.speakingMessageId === item.id) {
@@ -249,33 +258,77 @@ export default {
       }
 
       this.stopSpeech();
-      const utterance = new SpeechSynthesisUtterance(item.content);
-      utterance.lang = 'zh-CN';
-      utterance.rate = 1;
-      utterance.pitch = 1;
-      utterance.onend = () => {
+      this.error = '';
+      this.speakingMessageId = item.id;
+
+      try {
+        if (item.audioB64) {
+          await this.playBase64Audio(item.id, item.audioB64);
+          return;
+        }
+
+        const { data } = await http.post(
+          '/agent/tts',
+          {
+            text: item.content,
+          },
+          {
+            responseType: 'blob',
+            timeout: 0,
+          },
+        );
+
+        if (this.speakingMessageId !== item.id) {
+          return;
+        }
+
+        await this.playBlobAudio(item.id, data);
+      } catch (error) {
         if (this.speakingMessageId === item.id) {
-          this.speakingMessageId = null;
-          this.speechUtterance = null;
+          this.error = error.message;
+          this.stopSpeech();
+        }
+      }
+    },
+    async playBase64Audio(messageId, audioB64) {
+      const bytes = Uint8Array.from(atob(audioB64), char => char.charCodeAt(0));
+      await this.playBlobAudio(messageId, new Blob([bytes], { type: 'audio/mpeg' }));
+    },
+    async playBlobAudio(messageId, blob) {
+      if (this.speakingMessageId !== messageId) {
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(blob);
+      const audio = new Audio(objectUrl);
+      this.audioElement = audio;
+      this.audioObjectUrl = objectUrl;
+
+      audio.onended = () => {
+        if (this.speakingMessageId === messageId) {
+          this.stopSpeech();
         }
       };
-      utterance.onerror = () => {
-        if (this.speakingMessageId === item.id) {
-          this.speakingMessageId = null;
-          this.speechUtterance = null;
+      audio.onerror = () => {
+        if (this.speakingMessageId === messageId) {
+          this.error = '语音播放失败。';
+          this.stopSpeech();
         }
       };
 
-      this.speechUtterance = utterance;
-      this.speakingMessageId = item.id;
-      window.speechSynthesis.speak(utterance);
+      await audio.play();
     },
     stopSpeech() {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
+      if (this.audioElement) {
+        this.audioElement.pause();
+        this.audioElement.src = '';
+        this.audioElement = null;
+      }
+      if (this.audioObjectUrl) {
+        URL.revokeObjectURL(this.audioObjectUrl);
+        this.audioObjectUrl = null;
       }
       this.speakingMessageId = null;
-      this.speechUtterance = null;
     },
     toImageDataUrl(image) {
       return `data:image/png;base64,${image.b64Json}`;
@@ -284,6 +337,11 @@ export default {
       const [file] = event.target.files || [];
       this.documentFile = file || null;
       this.documentFileName = file ? file.name : '';
+    },
+    onDocumentUploadChange(file) {
+      const rawFile = file && file.raw ? file.raw : null;
+      this.documentFile = rawFile;
+      this.documentFileName = rawFile ? rawFile.name : '';
     },
     async checkHealth() {
       this.checkingHealth = true;
@@ -434,6 +492,25 @@ export default {
             && !assistantEntry.thinking
           ) {
             this.updateMessage(assistantEntry, { content: '（空响应）' });
+            return;
+          }
+
+          if (eventName === 'audio') {
+            if (payload.content) {
+              this.updateMessage(assistantEntry, { audioB64: payload.content });
+              this.stopSpeech();
+              this.speakingMessageId = assistantEntry.id;
+              this.playBase64Audio(assistantEntry.id, payload.content).catch(error => {
+                if (this.speakingMessageId === assistantEntry.id) {
+                  this.error = error.message;
+                  this.stopSpeech();
+                }
+              });
+            }
+            return;
+          }
+
+          if (eventName === 'audio-error') {
             return;
           }
 

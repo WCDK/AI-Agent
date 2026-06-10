@@ -1,202 +1,295 @@
 <template>
-  <main class="app">
-    <section class="shell">
-      <header class="hero">
-        <p class="eyebrow">AiAgentFont</p>
-        <h1>AiAgentTest 控制台</h1>
-        <p class="intro">统一聊天入口、健康检查、意图模型训练与文档上传训练。</p>
-      </header>
-
-      <section class="card status-card">
-        <div class="card-header">
-          <h2>服务状态</h2>
-          <div class="actions">
-            <button :disabled="checkingHealth" @click="checkHealth">
-              {{ checkingHealth ? '检查中...' : '检查健康' }}
-            </button>
-          </div>
+  <el-container class="app">
+    <el-aside class="sidebar" width="248px">
+      <div class="brand">
+        <div class="brand-mark">AI</div>
+        <div>
+          <h1>AiAgent</h1>
+          <p>智能体控制台</p>
         </div>
-        <div class="status-line">
-          <span :class="['status-badge', healthBadgeClass]">{{ healthStatusText }}</span>
+      </div>
+
+      <el-menu
+        class="nav-menu"
+        :default-active="activeTab"
+        background-color="transparent"
+        text-color="#4b5563"
+        active-text-color="#2563eb"
+        @select="activeTab = $event"
+      >
+        <el-menu-item index="chat">
+          <i class="el-icon-chat-dot-round"></i>
+          <span slot="title">智能对话</span>
+        </el-menu-item>
+        <el-menu-item index="train">
+          <i class="el-icon-cpu"></i>
+          <span slot="title">意图训练</span>
+        </el-menu-item>
+        <el-menu-item index="document">
+          <i class="el-icon-document-add"></i>
+          <span slot="title">文档训练</span>
+        </el-menu-item>
+      </el-menu>
+
+      <div class="sidebar-status">
+        <span :class="['status-dot', healthBadgeClass]"></span>
+        <div>
+          <p>服务状态</p>
+          <strong>{{ healthStatusText }}</strong>
         </div>
-      </section>
+        <el-button
+          circle
+          size="mini"
+          icon="el-icon-refresh"
+          :loading="checkingHealth"
+          @click="checkHealth"
+        />
+      </div>
+    </el-aside>
 
-      <section class="tabs">
-        <button :class="{ active: activeTab === 'chat' }" @click="activeTab = 'chat'">聊天</button>
-        <button :class="{ active: activeTab === 'train' }" @click="activeTab = 'train'">意图训练</button>
-        <button :class="{ active: activeTab === 'document' }" @click="activeTab = 'document'">文档训练</button>
-      </section>
-
-      <section v-if="activeTab === 'chat'" class="card chat-card">
-        <div class="card-header">
-          <h2>对话</h2>
-          <div class="actions">
-            <button :disabled="sending || !message.trim()" @click="sendMessage">
-              {{ sending ? '思考中...' : '发送消息' }}
-            </button>
-            <button v-if="sending" class="secondary" @click="stopChat">
-              中断
-            </button>
-            <button class="secondary" :disabled="sending" @click="clearConversation">
-              清空会话
-            </button>
-          </div>
+    <el-container>
+      <el-header class="topbar" height="72px">
+        <div>
+          <p class="eyebrow">AI Agent Workspace</p>
+          <h2>{{ pageTitle }}</h2>
         </div>
+        <el-tag :type="healthBadgeClass === 'status-up' ? 'success' : 'warning'" effect="plain">
+          {{ healthStatusText }}
+        </el-tag>
+      </el-header>
 
-        <div class="meta-row">
-          <span>Session ID：{{ sessionId || '自动创建' }}</span>
-          <span>状态：{{ sending ? '流式响应中' : '空闲' }}</span>
-        </div>
+      <el-main class="main-panel">
+        <el-alert
+          v-if="error"
+          class="error-alert"
+          :title="error"
+          type="error"
+          show-icon
+          :closable="false"
+        />
 
-        <div ref="log" class="chat-log" @scroll="handleChatScroll">
-          <article
-            v-for="item in chatLog"
-            :key="item.id"
-            :class="['bubble', item.role]"
-          >
-            <div class="bubble-head">
-              <div class="bubble-meta">
-                <strong>{{ item.roleLabel }}</strong>
-                <span>{{ item.time }}</span>
+        <section v-if="activeTab === 'chat'" class="workspace chat-workspace">
+          <el-card class="panel chat-panel" shadow="never">
+            <div slot="header" class="panel-header">
+              <div>
+                <h3>对话</h3>
+                <p>支持流式响应、语音播放和图片结果展示</p>
               </div>
-              <button
-                class="copy-btn"
-                :disabled="!item.content && !item.thinking"
-                @click="copyMessage(item)"
-              >
-                {{ copiedMessageId === item.id ? '已复制' : '复制' }}
-              </button>
-              <button
-                v-if="item.role === 'assistant'"
-                class="copy-btn"
-                :disabled="!item.content"
-                @click="playMessageAudio(item)"
-              >
-                {{ speakingMessageId === item.id ? '停止' : '播放' }}
-              </button>
+              <div class="header-actions">
+                <el-button
+                  size="small"
+                  icon="el-icon-delete"
+                  :disabled="sending"
+                  @click="clearConversation"
+                >
+                  清空
+                </el-button>
+                <el-button
+                  v-if="sending"
+                  size="small"
+                  type="danger"
+                  icon="el-icon-video-pause"
+                  @click="stopChat"
+                >
+                  中断
+                </el-button>
+              </div>
             </div>
 
-            <section
-              v-if="item.role === 'assistant' && item.showThinking && item.thinking.trim()"
-              class="thinking-panel"
-            >
-              <p class="thinking-title">思考内容</p>
-              <p class="thinking-text">{{ item.thinking }}</p>
-            </section>
+            <div class="meta-strip">
+              <span>Session ID：{{ sessionId || '自动创建' }}</span>
+              <span>状态：{{ sending ? '流式响应中' : '空闲' }}</span>
+            </div>
 
-            <p v-if="item.content" class="bubble-text">{{ item.content }}</p>
+            <div ref="log" class="chat-log" @scroll="handleChatScroll">
+              <el-empty v-if="!chatLog.length" description="发送一条消息开始对话" />
 
-            <div v-if="item.images.length" class="image-grid">
-              <figure
-                v-for="(image, index) in item.images"
-                :key="`${item.id}-${index}`"
-                class="image-card"
+              <article
+                v-for="item in chatLog"
+                :key="item.id"
+                :class="['bubble', item.role]"
               >
-                <img
-                  class="generated-image"
-                  :src="toImageDataUrl(image)"
-                  :alt="image.revisedPrompt || '生成图片'"
+                <div class="bubble-head">
+                  <div class="bubble-meta">
+                    <strong>{{ item.roleLabel }}</strong>
+                    <span>{{ item.time }}</span>
+                  </div>
+                  <div class="bubble-actions">
+                    <el-button
+                      size="mini"
+                      icon="el-icon-document-copy"
+                      :disabled="!item.content && !item.thinking"
+                      @click="copyMessage(item)"
+                    >
+                      {{ copiedMessageId === item.id ? '已复制' : '复制' }}
+                    </el-button>
+                    <el-button
+                      v-if="item.role === 'assistant'"
+                      size="mini"
+                      :icon="speakingMessageId === item.id ? 'el-icon-video-pause' : 'el-icon-headset'"
+                      :disabled="!item.content"
+                      @click="playMessageAudio(item)"
+                    >
+                      {{ speakingMessageId === item.id ? '停止' : '播放' }}
+                    </el-button>
+                  </div>
+                </div>
+
+                <el-collapse
+                  v-if="item.role === 'assistant' && item.showThinking && item.thinking.trim()"
+                  class="thinking-collapse"
+                >
+                  <el-collapse-item title="思考内容" name="thinking">
+                    <p class="thinking-text">{{ item.thinking }}</p>
+                  </el-collapse-item>
+                </el-collapse>
+
+                <p v-if="item.content" class="bubble-text">{{ item.content }}</p>
+
+                <div v-if="item.images.length" class="image-grid">
+                  <figure
+                    v-for="(image, index) in item.images"
+                    :key="`${item.id}-${index}`"
+                    class="image-card"
+                  >
+                    <img
+                      class="generated-image"
+                      :src="toImageDataUrl(image)"
+                      :alt="image.revisedPrompt || '生成图片'"
+                    />
+                    <figcaption v-if="image.revisedPrompt" class="image-caption">
+                      优化提示词：{{ image.revisedPrompt }}
+                    </figcaption>
+                  </figure>
+                </div>
+              </article>
+            </div>
+
+            <div class="composer">
+              <el-input
+                v-model.trim="sessionId"
+                class="session-input"
+                size="small"
+                clearable
+                placeholder="Session ID（留空自动创建）"
+              />
+              <el-input
+                v-model="message"
+                type="textarea"
+                :autosize="{ minRows: 3, maxRows: 8 }"
+                resize="vertical"
+                placeholder="输入消息后按 Enter 发送，Shift+Enter 换行"
+                @keydown.enter.exact.native.prevent="sendMessage"
+              />
+              <div class="composer-actions">
+                <el-button
+                  type="primary"
+                  icon="el-icon-s-promotion"
+                  :loading="sending"
+                  :disabled="sending || !message.trim()"
+                  @click="sendMessage"
+                >
+                  发送消息
+                </el-button>
+                <el-button
+                  v-if="sending"
+                  type="danger"
+                  icon="el-icon-video-pause"
+                  @click="stopChat"
+                >
+                  中断
+                </el-button>
+              </div>
+            </div>
+          </el-card>
+        </section>
+
+        <section v-if="activeTab === 'train'" class="workspace">
+          <el-card class="panel" shadow="never">
+            <div slot="header" class="panel-header">
+              <div>
+                <h3>训练 DL4J 意图模型</h3>
+                <p>调整训练轮数并提交样本 JSON</p>
+              </div>
+              <el-button
+                type="primary"
+                icon="el-icon-cpu"
+                :loading="training"
+                :disabled="training"
+                @click="trainModel"
+              >
+                开始训练
+              </el-button>
+            </div>
+
+            <el-form label-position="top">
+              <el-form-item label="训练轮数 epochs">
+                <el-input-number v-model="trainingEpochs" :min="1" :step="50" />
+              </el-form-item>
+              <el-form-item label="训练样本 JSON">
+                <el-input
+                  v-model="trainingSamplesJson"
+                  class="code-input"
+                  type="textarea"
+                  :rows="14"
+                  resize="vertical"
+                  placeholder='[{ "message": "你好", "intent": "CHAT" }]'
                 />
-                <figcaption v-if="image.revisedPrompt" class="image-caption">
-                  优化提示词：{{ image.revisedPrompt }}
-                </figcaption>
-              </figure>
+              </el-form-item>
+            </el-form>
+
+            <pre v-if="trainingResult" class="result">{{ trainingResultText }}</pre>
+          </el-card>
+        </section>
+
+        <section v-if="activeTab === 'document'" class="workspace">
+          <el-card class="panel" shadow="never">
+            <div slot="header" class="panel-header">
+              <div>
+                <h3>上传文档并创建资料库索引</h3>
+                <p>支持常见文本、配置、代码和办公文档</p>
+              </div>
+              <el-button
+                type="primary"
+                icon="el-icon-upload"
+                :loading="documentTraining"
+                :disabled="documentTraining || !documentFile"
+                @click="uploadDocumentAndTrain"
+              >
+                上传并创建索引
+              </el-button>
             </div>
-          </article>
-        </div>
 
-        <div class="composer">
-          <label class="field">
-            <span>Session ID</span>
-            <input v-model.trim="sessionId" type="text" placeholder="留空自动创建" />
-          </label>
-
-          <label class="field">
-            <span>消息</span>
-            <textarea
-              v-model="message"
-              rows="4"
-              placeholder="输入消息后按 Enter 发送，Shift+Enter 换行"
-              @keydown.enter.exact.prevent="sendMessage"
-            ></textarea>
-          </label>
-
-          <button class="send-btn" :disabled="sending || !message.trim()" @click="sendMessage">
-            发送
-          </button>
-          <button v-if="sending" class="stop-btn" @click="stopChat">
-            中断
-          </button>
-        </div>
-      </section>
-
-      <section v-if="activeTab === 'train'" class="card train-card">
-        <div class="card-header">
-          <h2>训练 DL4J 意图模型</h2>
-          <div class="actions">
-            <button :disabled="training" @click="trainModel">
-              {{ training ? '训练中...' : '开始训练' }}
-            </button>
-          </div>
-        </div>
-
-        <div class="train-grid">
-          <label class="field">
-            <span>训练轮数 epochs</span>
-            <input v-model.number="trainingEpochs" type="number" min="1" />
-          </label>
-        </div>
-
-        <label class="field">
-          <span>训练样本 JSON</span>
-          <textarea
-            v-model="trainingSamplesJson"
-            class="samples-input"
-            rows="12"
-            placeholder="[{ message: '你好', intent: 'CHAT' }]"
-          ></textarea>
-        </label>
-
-        <pre v-if="trainingResult" class="result">{{ trainingResultText }}</pre>
-      </section>
-
-      <section v-if="activeTab === 'document'" class="card document-card">
-        <div class="card-header">
-          <h2>上传文档并创建资料库索引</h2>
-          <div class="actions">
-            <button :disabled="documentTraining || !documentFile" @click="uploadDocumentAndTrain">
-              {{ documentTraining ? '上传中...' : '上传并创建索引' }}
-            </button>
-          </div>
-        </div>
-
-        <div class="document-panel">
-          <label class="field">
-            <span>选择文档</span>
-            <input
-              class="file-input"
-              type="file"
+            <el-upload
+              class="document-upload"
+              drag
+              action=""
+              :auto-upload="false"
+              :show-file-list="false"
               accept=".txt,.md,.json,.csv,.pdf,.docx,.java,.xml,.yaml,.yml,.properties,.log"
-              @change="onDocumentSelected"
+              :on-change="onDocumentUploadChange"
+            >
+              <i class="el-icon-upload"></i>
+              <div class="el-upload__text">将文件拖到此处，或<em>点击选择</em></div>
+              <div slot="tip" class="el-upload__tip">
+                当前文件：{{ documentFileName || '未选择文件' }}；存储目录：D:\dssource
+              </div>
+            </el-upload>
+
+            <el-alert
+              class="document-tip"
+              title="上传后系统会保存原始文档、抽取文本，并创建资料库索引。聊天时会优先检索资料库内容辅助回答。"
+              type="info"
+              show-icon
+              :closable="false"
             />
-          </label>
 
-          <div class="meta-row">
-            <span>当前文件：{{ documentFileName || '未选择文件' }}</span>
-            <span>存储目录：D:\dssource</span>
-          </div>
-
-          <p class="document-tip">
-            上传后系统会保存原始文档、抽取文本，并创建资料库索引。聊天时会优先检索资料库内容辅助回答。
-          </p>
-        </div>
-
-        <pre v-if="documentTrainingResult" class="result">{{ documentTrainingResultText }}</pre>
-      </section>
-
-      <p v-if="error" class="error">{{ error }}</p>
-    </section>
-  </main>
+            <pre v-if="documentTrainingResult" class="result">{{ documentTrainingResultText }}</pre>
+          </el-card>
+        </section>
+      </el-main>
+    </el-container>
+  </el-container>
 </template>
 
 <script src="./App.js"></script>

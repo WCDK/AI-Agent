@@ -1,0 +1,8 @@
+com\wcdk\ai\aiagenttest\agent\core\SdWebuiClient$Txt2ImgRequest.class
+com\wcdk\ai\aiagenttest\config\WcdkProperties$SdWebui.class
+com\wcdk\ai\aiagenttest\agent\core\SdWebuiClient.class
+com\wcdk\ai\aiagenttest\agent\core\EdgeTtsService.class
+com\wcdk\ai\aiagenttest\agent\core\TtsRequest.class
+com\wcdk\ai\aiagenttest\agent\core\GeneratedImage.class
+com\wcdk\ai\aiagenttest\config\WcdkProperties$Tts.class
+com\wcdk\ai\aiagenttest\agent\core\SdWebuiClient$Txt2ImgResponse.class
