@@ -12,6 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 @Service
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 public class EdgeTtsService {
 
     private final WcdkProperties properties;
@@ -19,6 +24,7 @@ public class EdgeTtsService {
     public EdgeTtsService(WcdkProperties properties) {
         this.properties = properties;
     }
+
 
     public byte[] synthesize(TtsRequest request) {
         var tts = properties.getAgent().getTts();

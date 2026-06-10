@@ -8,6 +8,11 @@ import java.util.Map;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 @Data
 @ConfigurationProperties(prefix = "wcdk")
 public class WcdkProperties {

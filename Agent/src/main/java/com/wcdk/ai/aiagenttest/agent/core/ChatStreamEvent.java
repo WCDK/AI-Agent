@@ -5,6 +5,11 @@ import java.util.List;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Chat stream event")
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 public record ChatStreamEvent(
         @Schema(description = "Event type: meta, thinking, delta, done, error")
         String type,

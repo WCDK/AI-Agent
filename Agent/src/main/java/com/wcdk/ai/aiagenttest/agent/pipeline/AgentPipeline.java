@@ -7,6 +7,11 @@ import com.wcdk.ai.aiagenttest.agent.rules.DecisionResult;
 import com.wcdk.ai.aiagenttest.agent.rules.RuleDecisionModule;
 import org.springframework.stereotype.Service;
 
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 @Service
 public class AgentPipeline {
 

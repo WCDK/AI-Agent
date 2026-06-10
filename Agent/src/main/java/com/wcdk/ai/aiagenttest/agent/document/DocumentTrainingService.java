@@ -14,6 +14,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 @Service
 public class DocumentTrainingService {
 

@@ -3,6 +3,11 @@ package com.wcdk.ai.aiagenttest.agent.pipeline;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 @Component
 public class PerceptionModule {
 

@@ -6,6 +6,11 @@ import com.wcdk.ai.aiagenttest.agent.core.OllamaMessage;
 import com.wcdk.ai.aiagenttest.agent.rules.DecisionResult;
 import com.wcdk.ai.aiagenttest.agent.rules.InferenceResult;
 
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 public record PipelineResult(
         List<OllamaMessage> messages,
         PerceptionResult perception,

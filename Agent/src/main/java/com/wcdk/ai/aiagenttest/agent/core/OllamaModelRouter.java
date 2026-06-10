@@ -10,6 +10,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 @Component
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 public class OllamaModelRouter {
 
     private final WcdkProperties properties;

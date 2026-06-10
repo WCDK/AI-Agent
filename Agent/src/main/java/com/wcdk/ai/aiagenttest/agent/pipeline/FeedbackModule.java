@@ -5,6 +5,11 @@ import java.time.Instant;
 import com.wcdk.ai.aiagenttest.agent.rules.DecisionResult;
 import org.springframework.stereotype.Component;
 
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 @Component
 public class FeedbackModule {
 

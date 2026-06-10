@@ -11,6 +11,11 @@ import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 @Component
 public class OllamaDatasetBuilder {
 
