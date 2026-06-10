@@ -1,18 +1,25 @@
 package com.wcdk.ai.aiagenttest.agent.core;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "聊天流式事件")
+@Schema(description = "Chat stream event")
 public record ChatStreamEvent(
-        @Schema(description = "事件类型：meta、thinking、delta、done、error")
+        @Schema(description = "Event type: meta, thinking, delta, done, error")
         String type,
-        @Schema(description = "会话 ID")
+        @Schema(description = "Session ID")
         String sessionId,
-        @Schema(description = "当前实际使用的模型", example = "deepseek-r1:7b")
+        @Schema(description = "Current model", example = "deepseek-r1:7b")
         String model,
-        @Schema(description = "模型路由", example = "chat")
+        @Schema(description = "Model route", example = "chat")
         String modelRoute,
-        @Schema(description = "事件内容。delta 事件通常承载回答片段")
-        String content
+        @Schema(description = "Event content")
+        String content,
+        @Schema(description = "Generated images")
+        List<GeneratedImage> images
 ) {
+    public ChatStreamEvent(String type, String sessionId, String model, String modelRoute, String content) {
+        this(type, sessionId, model, modelRoute, content, List.of());
+    }
 }
