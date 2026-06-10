@@ -16,6 +16,11 @@ import com.wcdk.ai.aiagenttest.config.WcdkProperties;
 import org.springframework.stereotype.Component;
 
 @Component
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 public class OllamaChatClient {
 
     private final WcdkProperties properties;

@@ -9,6 +9,11 @@ import com.wcdk.ai.aiagenttest.agent.document.KnowledgeBaseService;
 import org.springframework.stereotype.Component;
 
 @Component
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 public class AgentUtil {
 
     private final KnowledgeBaseService knowledgeBaseService;

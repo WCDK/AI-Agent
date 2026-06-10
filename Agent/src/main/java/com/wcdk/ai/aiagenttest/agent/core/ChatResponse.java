@@ -3,6 +3,11 @@ package com.wcdk.ai.aiagenttest.agent.core;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "聊天响应")
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 public record ChatResponse(
         @Schema(description = "会话 ID，后续连续对话需要传回该值")
         String sessionId,

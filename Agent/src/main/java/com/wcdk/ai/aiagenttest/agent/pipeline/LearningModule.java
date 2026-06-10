@@ -6,6 +6,11 @@ import java.util.concurrent.atomic.LongAdder;
 
 import org.springframework.stereotype.Component;
 
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 @Component
 public class LearningModule {
 

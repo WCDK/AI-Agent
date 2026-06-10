@@ -2,6 +2,11 @@ package com.wcdk.ai.aiagenttest.agent.document;
 
 import java.util.List;
 
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 public record DocumentTrainingResponse(
         String trainingStatus,
         String uploadedFileName,

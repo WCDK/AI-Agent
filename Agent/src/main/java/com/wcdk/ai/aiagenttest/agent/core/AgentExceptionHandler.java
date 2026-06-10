@@ -11,6 +11,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 public class AgentExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(AgentExceptionHandler.class);

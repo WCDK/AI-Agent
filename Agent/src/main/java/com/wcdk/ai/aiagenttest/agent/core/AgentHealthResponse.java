@@ -3,6 +3,11 @@ package com.wcdk.ai.aiagenttest.agent.core;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Agent 健康检查响应")
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 public record AgentHealthResponse(
         @Schema(description = "服务状态", example = "UP")
         String status,

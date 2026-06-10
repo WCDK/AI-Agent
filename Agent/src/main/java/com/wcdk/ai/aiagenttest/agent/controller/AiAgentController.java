@@ -33,6 +33,11 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RestController
 @RequestMapping("/api/agent")
 @Tag(name = "AI Agent", description = "统一聊天入口，支持聊天、图片生成、意图训练与文档定制模型训练")
+/**
+ * @auther WCDK
+ * @date 2026/6/10
+ * @version 1.0
+ **/
 public class AiAgentController {
 
     private final SimpleAiAgent aiAgent;
