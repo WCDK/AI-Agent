@@ -168,14 +168,22 @@ body {
   }
 }
 
-.chat-panel,
-.chat-panel > .el-card__body {
+.chat-panel {
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.chat-panel > .el-card__header {
+  flex-shrink: 0;
 }
 
 .chat-panel > .el-card__body {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  height: auto;
   min-height: 0;
 }
 
@@ -288,12 +296,20 @@ body {
   border-top: 1px solid @line;
 }
 
-.session-input {
-  max-width: 360px;
+.composer-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px;
 }
 
 .composer-actions {
   justify-content: flex-end;
+  flex-wrap: nowrap;
+
+  .el-button {
+    min-width: 88px;
+  }
 }
 
 .code-input textarea,
@@ -389,5 +405,13 @@ body {
 
   .bubble {
     width: 100%;
+  }
+
+  .composer-row {
+    grid-template-columns: 1fr;
+  }
+
+  .composer-actions {
+    justify-content: flex-end;
   }
 }

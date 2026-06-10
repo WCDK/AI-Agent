@@ -97,8 +97,7 @@
             </div>
 
             <div class="meta-strip">
-              <span>Session ID：{{ sessionId || '自动创建' }}</span>
-              <span>状态：{{ sending ? '流式响应中' : '空闲' }}</span>
+              <span>状态：{{ sending ? '思考中...' : '空闲' }}</span>
             </div>
 
             <div ref="log" class="chat-log" @scroll="handleChatScroll">
@@ -139,7 +138,7 @@
                   v-if="item.role === 'assistant' && item.showThinking && item.thinking.trim()"
                   class="thinking-collapse"
                 >
-                  <el-collapse-item title="思考内容" name="thinking">
+                  <el-collapse-item title="思考中..." name="thinking">
                     <p class="thinking-text">{{ item.thinking }}</p>
                   </el-collapse-item>
                 </el-collapse>
@@ -166,39 +165,34 @@
             </div>
 
             <div class="composer">
-              <el-input
-                v-model.trim="sessionId"
-                class="session-input"
-                size="small"
-                clearable
-                placeholder="Session ID（留空自动创建）"
-              />
-              <el-input
-                v-model="message"
-                type="textarea"
-                :autosize="{ minRows: 3, maxRows: 8 }"
-                resize="vertical"
-                placeholder="输入消息后按 Enter 发送，Shift+Enter 换行"
-                @keydown.enter.exact.native.prevent="sendMessage"
-              />
-              <div class="composer-actions">
-                <el-button
-                  type="primary"
-                  icon="el-icon-s-promotion"
-                  :loading="sending"
-                  :disabled="sending || !message.trim()"
-                  @click="sendMessage"
-                >
-                  发送消息
-                </el-button>
-                <el-button
-                  v-if="sending"
-                  type="danger"
-                  icon="el-icon-video-pause"
-                  @click="stopChat"
-                >
-                  中断
-                </el-button>
+              <div class="composer-row">
+                <el-input
+                  v-model="message"
+                  type="textarea"
+                  :autosize="{ minRows: 3, maxRows: 8 }"
+                  resize="vertical"
+                  placeholder="输入消息后按 Enter 发送，Shift+Enter 换行"
+                  @keydown.enter.exact.native.prevent="sendMessage"
+                />
+                <div class="composer-actions">
+                  <el-button
+                    type="primary"
+                    icon="el-icon-s-promotion"
+                    :loading="sending"
+                    :disabled="sending || !message.trim()"
+                    @click="sendMessage"
+                  >
+                    发送
+                  </el-button>
+                  <el-button
+                    v-if="sending"
+                    type="danger"
+                    icon="el-icon-video-pause"
+                    @click="stopChat"
+                  >
+                    中断
+                  </el-button>
+                </div>
               </div>
             </div>
           </el-card>
