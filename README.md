@@ -1,12 +1,41 @@
-# DeepSeek-r1 问答，prompt生成优化
-## ollama 
-## deepseek-r1:7b
-## qwen2.5-coder:78
-## webui
-## springboot3.5.14
-## dl4j
-## drools
-## rag
-## edge-tts
-### deepseek prompt生成，优化（rag）-》dl4j意图分析-》drools规则引入
--》webui ui设计-》coder编码
+# AiAgent
+## 介绍
+```
+aiagent 智能问答，图片生成，代码生成
+```
+## 后端
+```
+    springboot3.5.14
+    dl4j 深度学习
+    drools 规则引擎
+    rag 检索
+    edge-tts 文本转语音
+    knife4j 接口文档
+```
+## 大模型
+### ollama
+```
+    deepseek-r1:7b  
+    qwen2.5-coder:7b
+```
+### sd.webui
+```
+   sd_xl_refiner_1.0_0.9vae 
+```
+## 前端
+```
+    vue2
+    less
+    element-ui
+```
+## 目的
+```
+1 构建一个智能问答系统，基于深度学习模型，基于规则引擎，基于检索引擎，基于文本转语音
+2 构建一个图片生成系,根据文本生成图片
+3 手动上传训练资料实现，文本，图片生成训练
+4 自动爬虫抓取资料实现，文本，图片生成训练
+5 构建一个代码生成系统，基于深度学习模型，规则引擎，检索引擎
+6 构建一个知识库系统，基于深度学习模型，规则引擎，检索引擎
+7 构建一个知识图谱系统，基于深度学习模型，规则引擎，检索引擎
+8 理解需求，生成代码
+```
