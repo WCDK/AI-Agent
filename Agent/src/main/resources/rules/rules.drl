@@ -1,8 +1,9 @@
 package agent.rules
 
-import pipeline.agent.com.wcdk.ai.PerceptionResult;
-import rules.agent.com.wcdk.ai.InferenceResult;
-import rules.agent.com.wcdk.ai.DecisionResult;
+import com.wcdk.ai.agent.pipeline.PerceptionResult;
+import com.wcdk.ai.agent.rules.InferenceResult;
+import com.wcdk.ai.agent.pipeline.PerceptionResult
+import com.wcdk.ai.agent.rules.DecisionResult
 
 global java.util.concurrent.atomic.AtomicReference decision;
 
