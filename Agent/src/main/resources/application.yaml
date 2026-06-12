@@ -45,8 +45,6 @@ wcdk:
       timeout-seconds: 30
       max-text-length: 2000
   rules:
-    drools:
-      decision-rule-path: classpath:rules/rules.drl
     model: D:/Dl4jSource
   document:
     source-directory: D:/dssource

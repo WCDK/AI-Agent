@@ -67,13 +67,7 @@ public class WcdkProperties {
 
     @Data
     public static class Rules {
-        private final Drools drools = new Drools();
         private String model = "/Dl4jSource";
-    }
-
-    @Data
-    public static class Drools {
-        private String decisionRulePath = "classpath:rules/rules.drl";
     }
 
     @Data

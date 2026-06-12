@@ -39,7 +39,8 @@ public class Dl4jInferenceModule {
     public static final String SAMPLES_FILE_NAME = "training-samples.jsonl";
 
     private static final String MODEL_FILE_NAME = "ai-agent-intent-model.zip";
-    private static final String[] INTENTS = {"CHAT", "ANSWER_QUESTION", "EXECUTE_TASK"};
+    private static final int FEATURE_COUNT = 7;
+    private static final String[] INTENTS = {"CHAT", "ANSWER_QUESTION", "EXECUTE_TASK", "DRAW_IMAGE"};
 
     private final PerceptionModule perceptionModule;
     private final ObjectMapper objectMapper;
@@ -110,7 +111,7 @@ public class Dl4jInferenceModule {
             Files.writeString(labelsPath, String.join(System.lineSeparator(), INTENTS), StandardCharsets.UTF_8);
             Files.writeString(
                     metadataPath,
-                    "features=messageLength,tokenCount,question,command,risky,chinese" + System.lineSeparator()
+                    "features=messageLength,tokenCount,question,command,image,risky,chinese" + System.lineSeparator()
                             + "classes=" + String.join(",", INTENTS) + System.lineSeparator()
                             + "source=" + modelSource + System.lineSeparator(),
                     StandardCharsets.UTF_8
@@ -130,7 +131,10 @@ public class Dl4jInferenceModule {
         var outputDirectory = defaultOutputDirectory();
         var modelPath = outputDirectory.resolve(MODEL_FILE_NAME);
         if (Files.exists(modelPath)) {
-            return loadModel(modelPath, "LOADED:" + modelPath);
+            var loaded = tryLoadCompatibleModel(modelPath, "LOADED:" + modelPath);
+            if (loaded != null) {
+                return loaded;
+            }
         }
 
         var trained = createNetwork();
@@ -146,19 +150,34 @@ public class Dl4jInferenceModule {
     private MultiLayerNetwork loadTrainBaseNetwork(Path outputDirectory) {
         var modelPath = outputDirectory.resolve(MODEL_FILE_NAME);
         if (Files.exists(modelPath)) {
-            return loadModel(modelPath, "TRAINING_BASE:" + modelPath);
+            var loaded = tryLoadCompatibleModel(modelPath, "TRAINING_BASE:" + modelPath);
+            if (loaded != null) {
+                return loaded;
+            }
         }
 
         var defaultModelPath = defaultOutputDirectory().resolve(MODEL_FILE_NAME);
         if (Files.exists(defaultModelPath)) {
-            return loadModel(defaultModelPath, "TRAINING_BASE:" + defaultModelPath);
+            var loaded = tryLoadCompatibleModel(defaultModelPath, "TRAINING_BASE:" + defaultModelPath);
+            if (loaded != null) {
+                return loaded;
+            }
         }
         return createNetwork();
+    }
+
+    private MultiLayerNetwork tryLoadCompatibleModel(Path modelPath, String source) {
+        try {
+            return loadModel(modelPath, source);
+        } catch (IllegalStateException exception) {
+            return null;
+        }
     }
 
     private MultiLayerNetwork loadModel(Path modelPath, String source) {
         try {
             var loaded = ModelSerializer.restoreMultiLayerNetwork(modelPath.toFile());
+            validateModelShape(loaded, modelPath);
             this.network = loaded;
             this.modelSource = source;
             return loaded;
@@ -172,14 +191,14 @@ public class Dl4jInferenceModule {
                 .seed(20260528)
                 .weightInit(WeightInit.XAVIER)
                 .updater(new Adam(0.03))
-                .list()
+                        .list()
                 .layer(new DenseLayer.Builder()
-                        .nIn(6)
-                        .nOut(12)
+                        .nIn(FEATURE_COUNT)
+                        .nOut(14)
                         .activation(Activation.RELU)
                         .build())
                 .layer(new OutputLayer.Builder(LossFunctions.LossFunction.MCXENT)
-                        .nIn(12)
+                        .nIn(14)
                         .nOut(INTENTS.length)
                         .activation(Activation.SOFTMAX)
                         .build())
@@ -264,7 +283,12 @@ public class Dl4jInferenceModule {
                 new TrainingSample("implement a login api", "EXECUTE_TASK"),
                 new TrainingSample("fix this test failure", "EXECUTE_TASK"),
                 new TrainingSample("create vue page", "EXECUTE_TASK"),
-                new TrainingSample("delete all data", "EXECUTE_TASK")
+                new TrainingSample("delete all data", "EXECUTE_TASK"),
+                new TrainingSample("draw a cat in space", "DRAW_IMAGE"),
+                new TrainingSample("generate an image of a mountain lake", "DRAW_IMAGE"),
+                new TrainingSample("paint a futuristic city illustration", "DRAW_IMAGE"),
+                new TrainingSample("请画一只坐在月球上的橘猫", "DRAW_IMAGE"),
+                new TrainingSample("生成一张山间湖泊图片", "DRAW_IMAGE")
         );
     }
 
@@ -274,9 +298,21 @@ public class Dl4jInferenceModule {
                 Math.min(perception.tokenCount(), 100) / 100.0,
                 perception.question() ? 1.0 : 0.0,
                 perception.command() ? 1.0 : 0.0,
+                perception.image() ? 1.0 : 0.0,
                 perception.risky() ? 1.0 : 0.0,
                 perception.chinese() ? 1.0 : 0.0
         }});
+    }
+
+    private void validateModelShape(MultiLayerNetwork loaded, Path modelPath) {
+        try {
+            var output = loaded.output(Nd4j.zeros(1, FEATURE_COUNT), false);
+            if (output.columns() != INTENTS.length) {
+                throw new IllegalStateException("incompatible output classes");
+            }
+        } catch (RuntimeException exception) {
+            throw new IllegalStateException("训练模型结构与当前意图规则不兼容: " + modelPath, exception);
+        }
     }
 
     private int intentIndex(String intent) {

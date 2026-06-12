@@ -39,11 +39,16 @@ public class PerceptionModule {
                 || normalized.contains("清空");
         var image = lower.contains("image")
                 || lower.contains("picture")
+                || lower.contains("photo")
+                || lower.contains("illustration")
                 || lower.contains("draw")
-                || lower.contains("generate")
+                || lower.contains("paint")
                 || normalized.contains("图片")
                 || normalized.contains("图像")
+                || normalized.contains("照片")
+                || normalized.contains("插画")
                 || normalized.contains("画")
+                || normalized.contains("绘制")
                 || normalized.contains("生成图");
         var chinese = normalized.codePoints().anyMatch(codePoint ->
                 Character.UnicodeScript.of(codePoint) == Character.UnicodeScript.HAN);

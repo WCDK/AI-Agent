@@ -159,8 +159,8 @@ public class SimpleAiAgent {
             String model,
             String modelRoute
     ) {
-        var prompt = buildDirectImagePrompt(pipelineResult.perception().normalizedMessage());
-        var images = sdWebuiClient.txt2img(prompt);
+        var prompt = buildImagePrompt(pipelineResult);
+        var images = sdWebuiClient.txt2img(prompt, pipelineResult.decision().negativePrompt());
         var answer = "已生成图片。";
 
         synchronized (history) {
@@ -172,6 +172,15 @@ public class SimpleAiAgent {
         sendEvent(emitter, "delta", new ChatStreamEvent("delta", sessionId, model, modelRoute, answer, images));
         sendEvent(emitter, "done", new ChatStreamEvent("done", sessionId, model, modelRoute, ""));
         emitter.complete();
+    }
+
+    private String buildImagePrompt(PipelineResult pipelineResult) {
+        var decision = pipelineResult.decision();
+        var prompt = buildDirectImagePrompt(pipelineResult.perception().normalizedMessage());
+        if (StringUtils.hasText(decision.loraSetting()) && !prompt.contains(decision.loraSetting().trim())) {
+            return prompt + ", " + decision.loraSetting().trim();
+        }
+        return prompt;
     }
 
     private String buildDirectImagePrompt(String userMessage) {

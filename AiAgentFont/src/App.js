@@ -1,4 +1,4 @@
-import http from './api/http';
+﻿import http from './api/http';
 
 const defaultTrainingSamples = [
   { message: '你好，随便聊聊', intent: 'CHAT' },
@@ -7,6 +7,8 @@ const defaultTrainingSamples = [
   { message: 'Spring Boot 是怎么工作的？', intent: 'ANSWER_QUESTION' },
   { message: '实现一个用户登录接口', intent: 'EXECUTE_TASK' },
   { message: '修复失败的单元测试', intent: 'EXECUTE_TASK' },
+  { message: '请画一只坐在月球上的橘猫', intent: 'DRAW_IMAGE' },
+  { message: '生成一张山间湖泊图片', intent: 'DRAW_IMAGE' },
 ];
 
 export default {
@@ -420,8 +422,8 @@ export default {
       this.chatAbortController = new AbortController();
       this.stopSpeech();
 
-      this.appendMessage('user', '用户', userMessage);
-      const assistantEntry = this.appendMessage('assistant', '助手', '', []);
+      this.appendMessage('user', '鐢ㄦ埛', userMessage);
+      const assistantEntry = this.appendMessage('assistant', '鍔╂墜', '', []);
       this.currentAssistantEntry = assistantEntry;
 
       try {
@@ -522,7 +524,7 @@ export default {
         this.error = error.message;
         if (this.currentAssistantEntry && !this.currentAssistantEntry.content && !this.currentAssistantEntry.images.length) {
           this.updateMessage(this.currentAssistantEntry, {
-            content: '请求失败',
+            content: '璇锋眰澶辫触',
             showThinking: false,
           });
         }
@@ -594,3 +596,4 @@ export default {
     },
   },
 };
+

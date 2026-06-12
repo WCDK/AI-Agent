@@ -31,6 +31,10 @@ public class SdWebuiClient {
     }
 
     public List<GeneratedImage> txt2img(String prompt) {
+        return txt2img(prompt, "");
+    }
+
+    public List<GeneratedImage> txt2img(String prompt, String negativePrompt) {
         if (!properties.getAgent().getSdWebui().isEnabled()) {
             throw new IllegalStateException("Stable Diffusion WebUI image generation is disabled.");
         }
@@ -40,9 +44,12 @@ public class SdWebuiClient {
 
         try {
             var settings = properties.getAgent().getSdWebui();
+            var effectiveNegativePrompt = StringUtils.hasText(negativePrompt)
+                    ? negativePrompt.trim()
+                    : settings.getNegativePrompt();
             var requestBody = new Txt2ImgRequest(
                     prompt.trim(),
-                    settings.getNegativePrompt(),
+                    effectiveNegativePrompt,
                     settings.getSteps(),
                     settings.getWidth(),
                     settings.getHeight(),

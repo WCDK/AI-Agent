@@ -2,14 +2,17 @@ package com.wcdk.ai.agent.rules;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.wcdk.ai.agent.pipeline.PerceptionResult;
-import com.wcdk.ai.config.WcdkProperties;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieSession;
 import org.kie.internal.utils.KieHelper;
-import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -21,12 +24,16 @@ import org.springframework.util.StringUtils;
 @Component
 public class RuleDecisionModule {
 
-    private final WcdkProperties properties;
-    private final ResourceLoader resourceLoader;
+    private static final String RULE_LOCATION_PATTERN = "classpath*:rules/**/*.drl";
 
-    public RuleDecisionModule(WcdkProperties properties, ResourceLoader resourceLoader) {
-        this.properties = properties;
-        this.resourceLoader = resourceLoader;
+    private final PathMatchingResourcePatternResolver resourcePatternResolver;
+
+    public RuleDecisionModule() {
+        this(new PathMatchingResourcePatternResolver());
+    }
+
+    RuleDecisionModule(PathMatchingResourcePatternResolver resourcePatternResolver) {
+        this.resourcePatternResolver = resourcePatternResolver;
     }
 
     public DecisionResult decide(PerceptionResult perception, InferenceResult inference) {
@@ -55,30 +62,53 @@ public class RuleDecisionModule {
     }
 
     private KieSession newKieSession() {
-        var decisionDrl = readDecisionDrl();
-        if (!StringUtils.hasText(decisionDrl)) {
-            throw new IllegalStateException("Drools 决策规则内容不能为空。");
-        }
-
         var kieHelper = new KieHelper();
-        kieHelper.addContent(decisionDrl, ResourceType.DRL);
+        for (Resource resource : ruleResources()) {
+            kieHelper.addContent(readRuleContent(resource), ResourceType.DRL);
+        }
         return kieHelper.build().newKieSession();
     }
 
-    private String readDecisionDrl() {
-        var rulePath = properties.getRules().getDrools().getDecisionRulePath();
-        if (!StringUtils.hasText(rulePath)) {
-            throw new IllegalStateException("wcdk.rules.drools.decision-rule-path 不能为空。");
-        }
-
+    private List<Resource> ruleResources() {
         try {
-            var resource = resourceLoader.getResource(rulePath);
-            if (!resource.exists()) {
-                throw new IllegalStateException("Drools 规则文件不存在: " + rulePath);
+            var resources = resourcePatternResolver.getResources(RULE_LOCATION_PATTERN);
+            var rules = Arrays.stream(resources)
+                    .filter(Resource::exists)
+                    .filter(this::isCategorizedRule)
+                    .sorted(Comparator.comparing(this::resourceName))
+                    .toList();
+            if (rules.isEmpty()) {
+                throw new IllegalStateException("未扫描到 Drools 规则文件: " + RULE_LOCATION_PATTERN);
             }
-            return resource.getContentAsString(StandardCharsets.UTF_8);
+            return rules;
         } catch (IOException exception) {
-            throw new IllegalStateException("Drools 规则文件加载失败: " + rulePath, exception);
+            throw new IllegalStateException("扫描 Drools 规则文件失败: " + RULE_LOCATION_PATTERN, exception);
+        }
+    }
+
+    private boolean isCategorizedRule(Resource resource) {
+        var name = resourceName(resource).replace('\\', '/');
+        return name.matches(".*[/!]rules/[^/]+/[^/]+\\.drl$")
+                && !name.contains("/rules/fallback/");
+    }
+
+    private String readRuleContent(Resource resource) {
+        try {
+            var content = resource.getContentAsString(StandardCharsets.UTF_8);
+            if (!StringUtils.hasText(content)) {
+                throw new IllegalStateException("Drools 规则内容不能为空: " + resourceName(resource));
+            }
+            return content;
+        } catch (IOException exception) {
+            throw new IllegalStateException("Drools 规则文件加载失败: " + resourceName(resource), exception);
+        }
+    }
+
+    private String resourceName(Resource resource) {
+        try {
+            return resource.getURL().toString();
+        } catch (IOException exception) {
+            return resource.getDescription();
         }
     }
 }
