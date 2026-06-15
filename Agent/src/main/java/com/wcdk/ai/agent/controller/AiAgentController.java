@@ -5,8 +5,11 @@ import java.nio.file.Path;
 import com.wcdk.ai.agent.core.AgentHealthResponse;
 import com.wcdk.ai.agent.core.ChatRequest;
 import com.wcdk.ai.agent.core.EdgeTtsService;
+import com.wcdk.ai.agent.core.GeneratedImage;
+import com.wcdk.ai.agent.core.SdWebuiClient;
 import com.wcdk.ai.agent.core.SimpleAiAgent;
 import com.wcdk.ai.agent.core.TtsRequest;
+import com.wcdk.ai.agent.core.Txt2ImgRequest;
 import com.wcdk.ai.agent.document.DocumentTrainingResponse;
 import com.wcdk.ai.agent.document.DocumentTrainingService;
 import com.wcdk.ai.agent.pipeline.Dl4jInferenceModule;
@@ -41,6 +44,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class AiAgentController {
 
     private final SimpleAiAgent aiAgent;
+    private final SdWebuiClient sdWebuiClient;
     private final Dl4jInferenceModule inferenceModule;
     private final DocumentTrainingService documentTrainingService;
     private final EdgeTtsService edgeTtsService;
@@ -48,12 +52,14 @@ public class AiAgentController {
 
     public AiAgentController(
             SimpleAiAgent aiAgent,
+            SdWebuiClient sdWebuiClient,
             Dl4jInferenceModule inferenceModule,
             DocumentTrainingService documentTrainingService,
             EdgeTtsService edgeTtsService,
             WcdkProperties properties
     ) {
         this.aiAgent = aiAgent;
+        this.sdWebuiClient = sdWebuiClient;
         this.inferenceModule = inferenceModule;
         this.documentTrainingService = documentTrainingService;
         this.edgeTtsService = edgeTtsService;
@@ -76,6 +82,17 @@ public class AiAgentController {
                 .header("X-Accel-Buffering", "no")
                 .header("Cache-Control", "no-cache, no-transform")
                 .body(aiAgent.chatStream(request));
+    }
+
+    @PostMapping("/txt2img")
+    @Operation(summary = "Stable Diffusion 文生图", description = "直接调用 SDWebUI txt2img，按页面输入使用正向、负向和 LoRA 提示词")
+    public java.util.List<GeneratedImage> txt2img(@Valid @RequestBody Txt2ImgRequest request) {
+        var loraPrompt = request.loraPrompt() == null ? "" : request.loraPrompt().trim();
+        var prompt = request.positivePrompt().trim();
+        if (!loraPrompt.isBlank() && !prompt.contains(loraPrompt)) {
+            prompt = prompt + ", " + loraPrompt;
+        }
+        return sdWebuiClient.txt2img(prompt, request.negativePrompt());
     }
 
     @PostMapping(value = "/tts", produces = "audio/mpeg")
