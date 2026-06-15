@@ -341,6 +341,43 @@ body {
   margin-top: 8px;
 }
 
+.txt2img-workspace {
+  width: min(980px, 100%);
+}
+
+.txt2img-panel {
+  .el-card__body {
+    display: grid;
+    gap: 16px;
+  }
+}
+
+.txt2img-form {
+  display: grid;
+  gap: 2px;
+}
+
+.lora-row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.lora-name {
+  color: @text-main;
+  font-weight: 600;
+}
+
+.lora-prompt {
+  margin-top: 10px;
+}
+
+.txt2img-results {
+  padding-top: 16px;
+  border-top: 1px solid @line;
+}
+
 .image-grid {
   display: grid;
   gap: 10px;
@@ -413,5 +450,9 @@ body {
 
   .composer-actions {
     justify-content: flex-end;
+  }
+
+  .lora-row {
+    grid-template-columns: 1fr;
   }
 }
