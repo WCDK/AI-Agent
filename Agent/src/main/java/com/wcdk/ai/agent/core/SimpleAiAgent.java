@@ -40,6 +40,7 @@ public class SimpleAiAgent {
     private final OllamaChatClient ollamaChatClient;
     private final OllamaModelRouter ollamaModelRouter;
     private final SdWebuiClient sdWebuiClient;
+    private final SdPromptEnhancer sdPromptEnhancer;
     private final AgentPipeline agentPipeline;
     private final KnowledgeBaseService knowledgeBaseService;
     private final EdgeTtsService edgeTtsService;
@@ -50,6 +51,7 @@ public class SimpleAiAgent {
             OllamaChatClient ollamaChatClient,
             OllamaModelRouter ollamaModelRouter,
             SdWebuiClient sdWebuiClient,
+            SdPromptEnhancer sdPromptEnhancer,
             AgentPipeline agentPipeline,
             KnowledgeBaseService knowledgeBaseService,
             EdgeTtsService edgeTtsService
@@ -58,6 +60,7 @@ public class SimpleAiAgent {
         this.ollamaChatClient = ollamaChatClient;
         this.ollamaModelRouter = ollamaModelRouter;
         this.sdWebuiClient = sdWebuiClient;
+        this.sdPromptEnhancer = sdPromptEnhancer;
         this.agentPipeline = agentPipeline;
         this.knowledgeBaseService = knowledgeBaseService;
         this.edgeTtsService = edgeTtsService;
@@ -159,12 +162,14 @@ public class SimpleAiAgent {
             String model,
             String modelRoute
     ) {
-        var prompt = buildImagePrompt(pipelineResult);
-        var images = sdWebuiClient.txt2img(prompt, pipelineResult.decision().negativePrompt());
+        var prompt = sdPromptEnhancer.enhance(pipelineResult.perception().normalizedMessage(), pipelineResult.decision());
+        var images = sdWebuiClient.txt2img(prompt.positivePrompt(), prompt.negativePrompt());
         var answer = "已生成图片。";
 
         synchronized (history) {
-            history.add(new OllamaMessage("assistant", answer + "\nPrompt: " + prompt));
+            history.add(new OllamaMessage("assistant", answer
+                    + "\nPositive prompt: " + prompt.positivePrompt()
+                    + "\nNegative prompt: " + prompt.negativePrompt()));
             trimHistory(history);
         }
         agentPipeline.learn(sessionId, userMessage, pipelineResult.decision(), answer);

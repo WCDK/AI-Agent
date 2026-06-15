@@ -422,8 +422,8 @@ export default {
       this.chatAbortController = new AbortController();
       this.stopSpeech();
 
-      this.appendMessage('user', '鐢ㄦ埛', userMessage);
-      const assistantEntry = this.appendMessage('assistant', '鍔╂墜', '', []);
+      this.appendMessage('user', '我', userMessage);
+      const assistantEntry = this.appendMessage('assistant', '助手', '', []);
       this.currentAssistantEntry = assistantEntry;
 
       try {
