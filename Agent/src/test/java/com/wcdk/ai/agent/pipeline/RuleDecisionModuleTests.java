@@ -9,32 +9,41 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RuleDecisionModuleTests {
 
     @Test
-    void routesDrawingIntentToImageModel() {
+    void drawingIntentFallsBackToChat() {
         var module = new RuleDecisionModule();
 
-        var perception = new PerceptionResult("请帮我画一只太空猫", 1, false, false, false, false, true);
+        var perception = new PerceptionResult("draw a cat in space", 1, false, false, false, false, true);
         var inference = new InferenceResult("DRAW_IMAGE", 0.9, 0.2);
 
         var decision = module.decide(perception, inference);
 
-        assertThat(decision.action()).isEqualTo("GENERATE_IMAGE");
-        assertThat(decision.modelRoute()).isEqualTo("image");
+        assertThat(decision.action()).isEqualTo("CHAT");
+        assertThat(decision.modelRoute()).isEqualTo("chat");
     }
 
     @Test
-    void appliesPortraitPhotoDrawRule() {
+    void routesExecuteTaskIntentToChatModel() {
         var module = new RuleDecisionModule();
 
-        var perception = new PerceptionResult("请画一张真人写真", 1, false, false, true, false, true);
-        var inference = new InferenceResult("DRAW_IMAGE", 0.9, 0.2);
+        var perception = new PerceptionResult("run the local checks", 1, false, false, false, false, true);
+        var inference = new InferenceResult("EXECUTE_TASK", 0.9, 0.2);
 
         var decision = module.decide(perception, inference);
 
-        assertThat(decision.action()).isEqualTo("GENERATE_IMAGE");
-        assertThat(decision.imagePrompt()).isBlank();
-        assertThat(decision.negativePrompt()).contains("EasyNegative");
-        assertThat(decision.loraSetting()).isEqualTo("<lora:add_detail:0.3>");
-        assertThat(decision.loraWeight()).isEqualTo(0.3);
+        assertThat(decision.action()).isEqualTo("EXECUTE_TASK");
+        assertThat(decision.modelRoute()).isEqualTo("chat");
     }
 
+    @Test
+    void routesAnswerQuestionIntentToChatModel() {
+        var module = new RuleDecisionModule();
+
+        var perception = new PerceptionResult("what is Java", 1, false, false, false, false, true);
+        var inference = new InferenceResult("ANSWER_QUESTION", 0.9, 0.2);
+
+        var decision = module.decide(perception, inference);
+
+        assertThat(decision.action()).isEqualTo("ANSWER_QUESTION");
+        assertThat(decision.modelRoute()).isEqualTo("chat");
+    }
 }

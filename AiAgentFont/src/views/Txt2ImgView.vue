@@ -3,8 +3,8 @@
     <el-card class="panel txt2img-panel" shadow="never">
       <div slot="header" class="panel-header">
         <div>
-          <h3>Txt2Img</h3>
-          <p>Stable Diffusion WebUI txt2img</p>
+          <h3>文生图</h3>
+          <p>根据文字生成图片</p>
         </div>
         <el-button
           type="primary"
@@ -18,23 +18,23 @@
       </div>
 
       <el-form class="txt2img-form" label-position="top">
-        <el-form-item label="Positive prompt">
+        <el-form-item label="正向关键词">
           <el-input
             v-model="positivePrompt"
             type="textarea"
             :autosize="{ minRows: 7, maxRows: 12 }"
             resize="vertical"
-            placeholder="masterpiece, best quality, lazy orange cat sleeping under tree shade at summer noon"
+            placeholder="杰作，最佳质量，夏日正午树荫下慵懒的橘猫在睡觉"
           />
         </el-form-item>
 
-        <el-form-item label="Negative prompt">
+        <el-form-item label="负向关键词">
           <el-input
             v-model="negativePrompt"
             type="textarea"
             :autosize="{ minRows: 5, maxRows: 10 }"
             resize="vertical"
-            placeholder="worst quality, low quality, blurry, watermark, text"
+            placeholder="低质量，低分辨率，模糊，JPEG伪影，文字，水印，标志，签名"
           />
         </el-form-item>
 
@@ -91,7 +91,7 @@ export default {
     return {
       generating: false,
       positivePrompt: '',
-      negativePrompt: 'worst quality, low quality, lowres, blurry, jpeg artifacts, text, watermark, logo, signature',
+      negativePrompt: '',
       addDetailWeight: 0.7,
       epiNoiseOffsetWeight: 0.6,
       images: [],
@@ -110,7 +110,44 @@ export default {
       this.$emit('error', message);
     },
     toImageDataUrl(image) {
-      return `data:image/png;base64,${image.b64Json}`;
+      const value = typeof image === 'string'
+        ? image
+        : image.b64Json || image.b64_json || image.image || image.data || '';
+      return value.startsWith('data:image/') ? value : `data:image/png;base64,${value}`;
+    },
+    normalizeGeneratedImages(data) {
+      const source = Array.isArray(data)
+        ? data
+        : data && Array.isArray(data.images)
+          ? data.images
+          : data && Array.isArray(data.data)
+            ? data.data
+            : data
+              ? [data]
+              : [];
+
+      return source
+        .map(item => {
+          if (typeof item === 'string') {
+            return { b64Json: item, revisedPrompt: this.positivePrompt.trim() };
+          }
+
+          if (!item || typeof item !== 'object') {
+            return null;
+          }
+
+          const b64Json = item.b64Json || item.b64_json || item.image || item.data || '';
+          if (!b64Json) {
+            return null;
+          }
+
+          return {
+            ...item,
+            b64Json,
+            revisedPrompt: item.revisedPrompt || item.revised_prompt || item.prompt || this.positivePrompt.trim(),
+          };
+        })
+        .filter(Boolean);
     },
     async generate() {
       const positivePrompt = this.positivePrompt.trim();
@@ -134,7 +171,10 @@ export default {
             timeout: 0,
           },
         );
-        this.images = Array.isArray(data) ? data : [];
+        this.images = this.normalizeGeneratedImages(data);
+        if (!this.images.length) {
+          this.setError('后端已返回响应，但未找到可展示的图片数据。');
+        }
       } catch (error) {
         this.setError(error.message);
       } finally {
