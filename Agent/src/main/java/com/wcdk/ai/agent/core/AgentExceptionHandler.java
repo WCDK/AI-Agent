@@ -23,7 +23,7 @@ public class AgentExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse badRequest(IllegalArgumentException exception) {
-        log.error("请求参数异常。", exception);
+        log.error("请求参数错误。", exception);
         return ErrorResponse.of(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 
@@ -41,14 +41,14 @@ public class AgentExceptionHandler {
     @ExceptionHandler(IllegalStateException.class)
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public ErrorResponse serviceUnavailable(IllegalStateException exception) {
-        log.error("服务不可用。", exception);
+        log.error("服务暂不可用。", exception);
         return ErrorResponse.of(HttpStatus.SERVICE_UNAVAILABLE, exception.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse internalServerError(Exception exception) {
-        log.error("服务端异常。", exception);
+        log.error("服务端内部错误。", exception);
         return ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
     }
 

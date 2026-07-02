@@ -50,12 +50,12 @@ public class EdgeTtsService {
 
                 if (!process.waitFor(timeout.toSeconds(), TimeUnit.SECONDS)) {
                     process.destroyForcibly();
-                    throw new IllegalStateException("edge-tts timed out.");
+                    throw new IllegalStateException("edge-tts 执行超时。");
                 }
 
                 var processOutput = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
                 if (process.exitValue() != 0) {
-                    throw new IllegalStateException("edge-tts failed: " + processOutput.strip());
+                    throw new IllegalStateException("edge-tts 执行失败：" + processOutput.strip());
                 }
 
                 return Files.readAllBytes(output);
@@ -63,16 +63,16 @@ public class EdgeTtsService {
                 Files.deleteIfExists(output);
             }
         } catch (IOException exception) {
-            throw new IllegalStateException("edge-tts is not available. Install it with: pip install edge-tts", exception);
+            throw new IllegalStateException("edge-tts 不可用，请先安装：pip install edge-tts", exception);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("edge-tts was interrupted.", exception);
+            throw new IllegalStateException("edge-tts 执行被中断。", exception);
         }
     }
 
     private String normalizeText(String text, int maxTextLength) {
         if (!StringUtils.hasText(text)) {
-            throw new IllegalArgumentException("text must not be blank.");
+            throw new IllegalArgumentException("语音合成文本不能为空。");
         }
         var normalized = text.replace("\r\n", "\n").trim();
         if (normalized.length() > maxTextLength) {

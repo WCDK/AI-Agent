@@ -39,27 +39,28 @@ public class OllamaModelRouter {
 
     public void switchCurrentModel(String model) {
         if (!StringUtils.hasText(model)) {
-            throw new IllegalArgumentException("Ollama model name must not be blank.");
+            throw new IllegalArgumentException("Ollama 模型名称不能为空。");
         }
         currentModel.set(model.trim());
     }
 
     private String configuredDefaultTextModel() {
-        var ollama = properties.getAgent().getOllama();
-        var models = ollama.getModels();
-        if (models != null) {
-            var configuredModel = models.stream()
-                    .filter(StringUtils::hasText)
-                    .findFirst()
-                    .orElse("");
-            if (StringUtils.hasText(configuredModel)) {
-                return configuredModel;
-            }
-        }
-        if (StringUtils.hasText(ollama.getModel())) {
-            return ollama.getModel();
-        }
-        return "";
+//        var ollama = properties.getAgent().getOllama();
+//        var models = ollama.getModels();
+//        if (models != null) {
+//            var configuredModel = models.stream()
+//                    .filter(StringUtils::hasText)
+//                    .findFirst()
+//                    .orElse("");
+//            if (StringUtils.hasText(configuredModel)) {
+//                return configuredModel;
+//            }
+//        }
+//        if (StringUtils.hasText(ollama.getDefaultModel())) {
+//            return ollama.getDefaultModel();
+//        }
+        return properties.getAgent().getOllama().getDefaultModel();
+//        return "";
     }
 
     public String resolve(PipelineResult pipelineResult) {

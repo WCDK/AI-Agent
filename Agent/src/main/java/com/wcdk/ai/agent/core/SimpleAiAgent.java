@@ -2,7 +2,6 @@ package com.wcdk.ai.agent.core;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -11,39 +10,27 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 import com.wcdk.ai.agent.document.KnowledgeBaseService;
-import com.wcdk.ai.agent.pipeline.AgentPipeline;
-import com.wcdk.ai.agent.pipeline.PipelineResult;
 import com.wcdk.ai.config.WcdkProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
  * @auther WCDK
- * @date 2026/6/10
+ * @date 2026/7/2
  * @version 1.0
  **/
 @Service
+@Slf4j
 public class SimpleAiAgent {
 
     private static final Pattern THINKING_BLOCK = Pattern.compile("(?is)<think>.*?</think>\\s*");
-    private static final Pattern EN_IMAGE_REQUEST_PREFIX = Pattern.compile(
-            "(?iu)^\\s*(please\\s+)?(help\\s+me\\s+)?(generate|create|draw|make|paint)\\s+"
-                    + "(an?\\s+|the\\s+)?(image|picture|photo|illustration)?\\s*(of\\s+)?"
-    );
-    private static final Pattern ZH_IMAGE_REQUEST_PREFIX = Pattern.compile(
-            "^\\s*(请|帮我|给我|麻烦)?\\s*(生成|画|绘制|制作|创作)\\s*(一张|一个|一幅)?"
-                    + "\\s*(图片|图像|照片|插画|画)?\\s*(关于|有关|表现|描绘)?\\s*"
-    );
 
     private final WcdkProperties properties;
     private final OllamaChatClient ollamaChatClient;
     private final OllamaModelRouter ollamaModelRouter;
-    private final SdWebuiClient sdWebuiClient;
-    private final SdPromptEnhancer sdPromptEnhancer;
-    private final AgentPipeline agentPipeline;
     private final KnowledgeBaseService knowledgeBaseService;
-    private final EdgeTtsService edgeTtsService;
     private final ConcurrentMap<String, List<OllamaMessage>> sessions = new ConcurrentHashMap<>();
 
     public SimpleAiAgent(
@@ -52,18 +39,14 @@ public class SimpleAiAgent {
             OllamaModelRouter ollamaModelRouter,
             SdWebuiClient sdWebuiClient,
             SdPromptEnhancer sdPromptEnhancer,
-            AgentPipeline agentPipeline,
+            com.wcdk.ai.agent.pipeline.AgentPipeline agentPipeline,
             KnowledgeBaseService knowledgeBaseService,
             EdgeTtsService edgeTtsService
     ) {
         this.properties = properties;
         this.ollamaChatClient = ollamaChatClient;
         this.ollamaModelRouter = ollamaModelRouter;
-        this.sdWebuiClient = sdWebuiClient;
-        this.sdPromptEnhancer = sdPromptEnhancer;
-        this.agentPipeline = agentPipeline;
         this.knowledgeBaseService = knowledgeBaseService;
-        this.edgeTtsService = edgeTtsService;
     }
 
     public AgentHealthResponse health() {
@@ -74,7 +57,6 @@ public class SimpleAiAgent {
         );
     }
 
-
     public SseEmitter chatStream(ChatRequest request) {
         if (request == null || !StringUtils.hasText(request.message())) {
             throw new IllegalArgumentException("消息内容不能为空。");
@@ -83,55 +65,71 @@ public class SimpleAiAgent {
         var sessionId = StringUtils.hasText(request.sessionId())
                 ? request.sessionId()
                 : UUID.randomUUID().toString();
-
         var history = sessions.computeIfAbsent(sessionId, ignored -> new ArrayList<>());
-        PipelineResult pipelineResult;
+        var model = ollamaModelRouter.defaultTextModel();
+        log.info("调用模型===={}===========",model);
+        var timeoutMillis = Duration.ofSeconds(properties.getAgent().getOllama().getTimeoutSeconds()).toMillis();
+        var emitter = new SseEmitter(timeoutMillis);
+
         synchronized (history) {
             history.add(new OllamaMessage("user", request.message().trim()));
             trimHistory(history);
-            // 先根据用户问题检索资料库，再用增强后的系统提示词构造模型消息。
-            pipelineResult = agentPipeline.prepare(request.message(), ragSystemPrompt(request.message()), new ArrayList<>(history));
         }
 
-        var timeoutSeconds = "GENERATE_IMAGE".equals(pipelineResult.decision().action())
-                ? Math.max(
-                properties.getAgent().getOllama().getTimeoutSeconds(),
-                properties.getAgent().getSdWebui().getTimeoutSeconds()
-        )
-                : properties.getAgent().getOllama().getTimeoutSeconds();
-        var timeoutMillis = Duration.ofSeconds(timeoutSeconds).toMillis();
-        var emitter = new SseEmitter(timeoutMillis);
-        CompletableFuture.runAsync(() -> streamTextResponse(emitter, sessionId, request.message(), history, pipelineResult));
+        CompletableFuture.runAsync(() -> streamTextResponse(emitter, sessionId, model, history, request.message()));
         return emitter;
+    }
+
+    public ChatResponse chatText(ChatRequest request) {
+        if (request == null || !StringUtils.hasText(request.message())) {
+            throw new IllegalArgumentException("消息内容不能为空。");
+        }
+        var sessionId = StringUtils.hasText(request.sessionId())
+                ? request.sessionId()
+                : UUID.randomUUID().toString();
+        var history = sessions.computeIfAbsent(sessionId, ignored -> new ArrayList<>());
+        var model = ollamaModelRouter.defaultTextModel();
+        log.info("user:{}================调用模型===={}===========",request.message(),model);
+        var messages = new ArrayList<OllamaMessage>();
+        messages.add(new OllamaMessage("system", ragSystemPrompt(request.message())));
+
+        synchronized (history) {
+            history.add(new OllamaMessage("user", request.message().trim()));
+            trimHistory(history);
+            messages.addAll(history);
+        }
+
+        var answer = stripThinking(ollamaChatClient.chat(model, messages));
+        synchronized (history) {
+            history.add(new OllamaMessage("assistant", answer));
+            trimHistory(history);
+        }
+        return new ChatResponse(sessionId, model, "chat", answer);
     }
 
     private void streamTextResponse(
             SseEmitter emitter,
             String sessionId,
-            String userMessage,
+            String model,
             List<OllamaMessage> history,
-            PipelineResult pipelineResult
+            String userMessage
     ) {
         var rawAnswer = new StringBuilder();
-        var model = ollamaModelRouter.resolve(pipelineResult);
-        var modelRoute = pipelineResult.decision().modelRoute();
+        var messages = new ArrayList<OllamaMessage>();
+        messages.add(new OllamaMessage("system", ragSystemPrompt(userMessage)));
+        synchronized (history) {
+            messages.addAll(history);
+        }
 
         try {
-            sendEvent(emitter, "meta", new ChatStreamEvent("meta", sessionId, model, modelRoute, pipelineResult.traceSummary()));
-            if ("GENERATE_IMAGE".equals(pipelineResult.decision().action())) {
-                streamImageResponse(emitter, sessionId, userMessage, history, pipelineResult, model, modelRoute);
-                return;
-            }
-
-            ollamaChatClient.chatStream(model, pipelineResult.messages(), (eventType, content) -> {
-                if ("thinking".equals(eventType)) {
-                    rawAnswer.append("<think>").append(content).append("</think>");
-                    sendEvent(emitter, "thinking", new ChatStreamEvent("thinking", sessionId, model, modelRoute, content));
+            sendEvent(emitter, "meta", new ChatStreamEvent("meta", sessionId, model, "chat", ""));
+            ollamaChatClient.chatStream(model, messages, (eventType, content) -> {
+                if (!StringUtils.hasText(content)) {
                     return;
                 }
-
                 rawAnswer.append(content);
-                sendEvent(emitter, "delta", new ChatStreamEvent("delta", sessionId, model, modelRoute, content));
+                var type = "thinking".equals(eventType) ? "thinking" : "delta";
+                sendEvent(emitter, type, new ChatStreamEvent(type, sessionId, model, "chat", content));
             });
 
             var answer = stripThinking(rawAnswer.toString());
@@ -139,77 +137,14 @@ public class SimpleAiAgent {
                 history.add(new OllamaMessage("assistant", answer));
                 trimHistory(history);
             }
-            agentPipeline.learn(sessionId, userMessage, pipelineResult.decision(), answer);
-
-            sendAudioEvent(emitter, sessionId, model, modelRoute, answer);
-            sendEvent(emitter, "done", new ChatStreamEvent("done", sessionId, model, modelRoute, ""));
+            sendEvent(emitter, "done", new ChatStreamEvent("done", sessionId, model, "chat", ""));
             emitter.complete();
         } catch (Exception exception) {
             try {
-                sendEvent(emitter, "error", new ChatStreamEvent("error", sessionId, model, modelRoute, exception.getMessage()));
+                sendEvent(emitter, "error", new ChatStreamEvent("error", sessionId, model, "chat", exception.getMessage()));
             } finally {
                 emitter.completeWithError(exception);
             }
-        }
-    }
-
-    private void streamImageResponse(
-            SseEmitter emitter,
-            String sessionId,
-            String userMessage,
-            List<OllamaMessage> history,
-            PipelineResult pipelineResult,
-            String model,
-            String modelRoute
-    ) {
-        var prompt = sdPromptEnhancer.enhance(pipelineResult.perception().normalizedMessage(), pipelineResult.decision());
-        var images = sdWebuiClient.txt2img(prompt.positivePrompt(), prompt.negativePrompt());
-        var answer = "已生成图片。";
-
-        synchronized (history) {
-            history.add(new OllamaMessage("assistant", answer
-                    + "\nPositive prompt: " + prompt.positivePrompt()
-                    + "\nNegative prompt: " + prompt.negativePrompt()));
-            trimHistory(history);
-        }
-        agentPipeline.learn(sessionId, userMessage, pipelineResult.decision(), answer);
-
-        sendEvent(emitter, "delta", new ChatStreamEvent("delta", sessionId, model, modelRoute, answer, images));
-        sendEvent(emitter, "done", new ChatStreamEvent("done", sessionId, model, modelRoute, ""));
-        emitter.complete();
-    }
-
-    private String buildImagePrompt(PipelineResult pipelineResult) {
-        var decision = pipelineResult.decision();
-        var prompt = buildDirectImagePrompt(pipelineResult.perception().normalizedMessage());
-        if (StringUtils.hasText(decision.loraSetting()) && !prompt.contains(decision.loraSetting().trim())) {
-            return prompt + ", " + decision.loraSetting().trim();
-        }
-        return prompt;
-    }
-
-    private String buildDirectImagePrompt(String userMessage) {
-        var source = StringUtils.hasText(userMessage) ? userMessage.trim() : "";
-        var prompt = EN_IMAGE_REQUEST_PREFIX.matcher(source).replaceFirst("").trim();
-        prompt = ZH_IMAGE_REQUEST_PREFIX.matcher(prompt).replaceFirst("").trim();
-        prompt = prompt
-                .replaceAll("^[，,。.：:；;\\s]+", "")
-                .replaceAll("[。；;\\s]*(谢谢|多谢|thanks|thank you)[。.!！\\s]*$", "")
-                .trim();
-        return StringUtils.hasText(prompt) ? prompt : source;
-    }
-
-    private void sendAudioEvent(SseEmitter emitter, String sessionId, String model, String modelRoute, String answer) {
-        if (!StringUtils.hasText(answer)) {
-            return;
-        }
-
-        try {
-            var audio = edgeTtsService.synthesize(new TtsRequest(answer, null));
-            var audioBase64 = Base64.getEncoder().encodeToString(audio);
-            sendEvent(emitter, "audio", new ChatStreamEvent("audio", sessionId, model, modelRoute, audioBase64));
-        } catch (Exception exception) {
-            sendEvent(emitter, "audio-error", new ChatStreamEvent("audio-error", sessionId, model, modelRoute, exception.getMessage()));
         }
     }
 
@@ -232,10 +167,6 @@ public class SimpleAiAgent {
         return THINKING_BLOCK.matcher(content).replaceAll("").trim();
     }
 
-    /**
-     * 检索增强生成的回答阶段：先用用户问题检索资料库，再把命中的资料片段注入系统提示词。
-     * 模型仍然走原有聊天接口，但回答时会优先依据检索上下文，避免只依赖模型自身记忆。
-     */
     private String ragSystemPrompt(String userMessage) {
         var basePrompt = properties.getAgent().getSystemPrompt();
         var hits = knowledgeBaseService.search(userMessage);
@@ -245,8 +176,8 @@ public class SimpleAiAgent {
         }
 
         return basePrompt + "\n\n"
-                + "请优先结合以下资料库检索结果回答用户问题。"
-                + "如果资料库没有足够依据，请明确说明资料不足，不要编造。\n"
+                + "回答时请优先使用以下知识库上下文。"
+                + "如果上下文依据不足，请明确说明，不要编造事实。\n"
                 + context;
     }
 }

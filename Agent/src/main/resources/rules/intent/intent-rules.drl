@@ -14,7 +14,7 @@ then
   decision.set(new DecisionResult(
     "EXECUTE_TASK",
     "chat",
-    "The model classified this as an executable task. Reply with concrete and actionable content.",
+    "模型已将本次输入识别为可执行任务。请给出具体、可操作的回复。",
     true
   ));
 end
@@ -28,7 +28,7 @@ then
   decision.set(new DecisionResult(
     "ANSWER_QUESTION",
     "chat",
-    "The model classified this as a question. Answer directly and include necessary context.",
+    "模型已将本次输入识别为问题。请直接回答，并补充必要上下文。",
     true
   ));
 end

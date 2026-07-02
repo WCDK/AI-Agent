@@ -16,40 +16,23 @@ public class PerceptionModule {
         var lower = normalized.toLowerCase();
         var tokenCount = normalized.isBlank() ? 0 : normalized.split("\\s+").length;
         var question = normalized.endsWith("?")
-                || normalized.endsWith("？")
                 || lower.contains("what")
                 || lower.contains("why")
-                || lower.contains("how")
-                || normalized.contains("什么")
-                || normalized.contains("为什么")
-                || normalized.contains("怎么");
+                || lower.contains("how");
         var command = lower.contains("create")
                 || lower.contains("implement")
                 || lower.contains("write")
                 || lower.contains("fix")
-                || lower.contains("run")
-                || normalized.contains("创建")
-                || normalized.contains("实现")
-                || normalized.contains("修复")
-                || normalized.contains("执行");
+                || lower.contains("run");
         var risky = lower.contains("delete")
                 || lower.contains("drop")
-                || lower.contains("remove all")
-                || normalized.contains("删除")
-                || normalized.contains("清空");
+                || lower.contains("remove all");
         var image = lower.contains("image")
                 || lower.contains("picture")
                 || lower.contains("photo")
                 || lower.contains("illustration")
                 || lower.contains("draw")
-                || lower.contains("paint")
-                || normalized.contains("图片")
-                || normalized.contains("图像")
-                || normalized.contains("照片")
-                || normalized.contains("插画")
-                || normalized.contains("画")
-                || normalized.contains("绘制")
-                || normalized.contains("生成图");
+                || lower.contains("paint");
         var chinese = normalized.codePoints().anyMatch(codePoint ->
                 Character.UnicodeScript.of(codePoint) == Character.UnicodeScript.HAN);
 

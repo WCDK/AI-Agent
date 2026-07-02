@@ -16,6 +16,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 @Component
+/**
+ * @auther WCDK
+ * @date 2026/7/2
+ * @version 1.0
+ **/
 public class SdWebuiClient {
 
     private final WcdkProperties properties;
@@ -36,10 +41,10 @@ public class SdWebuiClient {
 
     public List<GeneratedImage> txt2img(String prompt, String negativePrompt) {
         if (!properties.getAgent().getSdWebui().isEnabled()) {
-            throw new IllegalStateException("Stable Diffusion WebUI image generation is disabled.");
+            throw new IllegalStateException("Stable Diffusion WebUI 图像生成未启用。");
         }
         if (!StringUtils.hasText(prompt)) {
-            throw new IllegalArgumentException("Image prompt must not be blank.");
+            throw new IllegalArgumentException("图像提示词不能为空。");
         }
 
         try {
@@ -66,13 +71,13 @@ public class SdWebuiClient {
 
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                throw new IllegalStateException("Stable Diffusion WebUI request failed: HTTP "
+                throw new IllegalStateException("Stable Diffusion WebUI 请求失败：HTTP "
                         + response.statusCode() + " - " + response.body());
             }
 
             var txt2ImgResponse = objectMapper.readValue(response.body(), Txt2ImgResponse.class);
             if (txt2ImgResponse.images() == null || txt2ImgResponse.images().isEmpty()) {
-                throw new IllegalStateException("Stable Diffusion WebUI response does not contain images.");
+                throw new IllegalStateException("Stable Diffusion WebUI 响应中没有图片。");
             }
 
             return txt2ImgResponse.images().stream()
@@ -81,13 +86,13 @@ public class SdWebuiClient {
                     .map(image -> new GeneratedImage(image, prompt.trim()))
                     .toList();
         } catch (IOException exception) {
-            throw new IllegalStateException("Failed to call Stable Diffusion WebUI. Confirm "
+            throw new IllegalStateException("调用 Stable Diffusion WebUI 失败，请确认 "
                     + properties.getAgent().getSdWebui().getWebuiDirectory()
-                    + " is running with --api at "
+                    + " 已使用 --api 启动，地址为 "
                     + properties.getAgent().getSdWebui().getBaseUrl() + ".", exception);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("Stable Diffusion WebUI request was interrupted.", exception);
+            throw new IllegalStateException("Stable Diffusion WebUI 请求被中断。", exception);
         }
     }
 

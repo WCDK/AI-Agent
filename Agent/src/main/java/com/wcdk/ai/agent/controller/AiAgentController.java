@@ -4,6 +4,7 @@ import java.nio.file.Path;
 
 import com.wcdk.ai.agent.core.AgentHealthResponse;
 import com.wcdk.ai.agent.core.ChatRequest;
+import com.wcdk.ai.agent.core.ChatResponse;
 import com.wcdk.ai.agent.core.EdgeTtsService;
 import com.wcdk.ai.agent.core.GeneratedImage;
 import com.wcdk.ai.agent.core.SdWebuiClient;
@@ -35,7 +36,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 @RequestMapping("/api/agent")
-@Tag(name = "AI Agent", description = "统一聊天入口，支持聊天、图片生成、意图训练与文档定制模型训练")
+@Tag(name = "AI Agent", description = "一体化AI服务接口：智能对话、图像生成、意图识别与文档训练")
 /**
  * @auther WCDK
  * @date 2026/6/10
@@ -67,14 +68,14 @@ public class AiAgentController {
     }
 
     @GetMapping("/health")
-    @Operation(summary = "检查服务健康状态", description = "返回当前 Agent 服务状态、默认模型名称和 Ollama 地址")
+    @Operation(summary = "健康状态检查", description = "返回Agent的当前状态")
     public AgentHealthResponse health() {
         return aiAgent.health();
     }
 
     @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "发送聊天消息", description = "统一聊天入口。系统会根据规则自动判断是走文本对话模型还是图片生成模型，并以 SSE 方式返回结果。")
+    @Operation(summary = "发送chat信息", description = "使用SSE流式返回结果")
     public ResponseEntity<SseEmitter> chat(@Valid @RequestBody ChatRequest request) {
         return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_EVENT_STREAM)
@@ -84,8 +85,12 @@ public class AiAgentController {
                 .body(aiAgent.chatStream(request));
     }
 
+    public ChatResponse chatText(ChatRequest request) {
+        return aiAgent.chatText(request);
+    }
+
     @PostMapping("/txt2img")
-    @Operation(summary = "Stable Diffusion 文生图", description = "直接调用 SDWebUI txt2img，按页面输入使用正向、负向和 LoRA 提示词")
+    @Operation(summary = "文生图", description = "文字转图片")
     public java.util.List<GeneratedImage> txt2img(@Valid @RequestBody Txt2ImgRequest request) {
         var loraPrompt = request.loraPrompt() == null ? "" : request.loraPrompt().trim();
         var prompt = request.positivePrompt().trim();
@@ -96,7 +101,7 @@ public class AiAgentController {
     }
 
     @PostMapping(value = "/tts", produces = "audio/mpeg")
-    @Operation(summary = "Text to speech", description = " Edge TTS 转MP3")
+    @Operation(summary = "文字转语音", description = "文字转语音")
     public ResponseEntity<byte[]> synthesizeSpeech(@Valid @RequestBody TtsRequest request) {
         return ResponseEntity.ok()
                 .contentType(MediaType.valueOf("audio/mpeg"))
@@ -105,7 +110,7 @@ public class AiAgentController {
     }
 
     @PostMapping("/train")
-    @Operation(summary = "训练意图识别模型", description = "提交训练样本后重新训练 DL4J 意图模型，并导出训练结果。")
+    @Operation(summary = "模型意图训练", description = "模型意图训练")
     public TrainingResponse train(@Valid @RequestBody TrainingRequest request) {
         var outputDirectory = request.outputDirectory() == null || request.outputDirectory().isBlank()
                 ? Path.of(properties.getRules().getModel())
@@ -115,7 +120,7 @@ public class AiAgentController {
     }
 
     @PostMapping(value = "/documents/train", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "上传资料训练模型", description = "接收文档后，抽取文本并生成训练数据")
+    @Operation(summary = "模型文档训练", description = "模型文档训练")
     public DocumentTrainingResponse uploadDocumentAndTrain(@RequestPart("file") MultipartFile file) {
         return documentTrainingService.uploadAndTrain(file);
     }

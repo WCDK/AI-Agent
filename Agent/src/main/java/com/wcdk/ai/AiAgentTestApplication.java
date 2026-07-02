@@ -17,5 +17,4 @@ public class AiAgentTestApplication {
         SpringApplication.run(AiAgentTestApplication.class, args);
         System.out.println("======================Agent 启动完成=====================");
     }
-
 }

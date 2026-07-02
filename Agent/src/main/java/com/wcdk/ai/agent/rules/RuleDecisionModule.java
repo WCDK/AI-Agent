@@ -56,7 +56,7 @@ public class RuleDecisionModule {
         return new DecisionResult(
                 "CHAT",
                 "chat",
-                "用户正在进行普通对话。请保持回答简洁、准确，并主动补齐必要上下文。",
+                "用户正在进行普通对话。请保持回答简洁、准确、有用。",
                 true
         );
     }
@@ -78,11 +78,11 @@ public class RuleDecisionModule {
                     .sorted(Comparator.comparing(this::resourceName))
                     .toList();
             if (rules.isEmpty()) {
-                throw new IllegalStateException("未扫描到 Drools 规则文件: " + RULE_LOCATION_PATTERN);
+                throw new IllegalStateException("未找到 Drools 规则文件：" + RULE_LOCATION_PATTERN);
             }
             return rules;
         } catch (IOException exception) {
-            throw new IllegalStateException("扫描 Drools 规则文件失败: " + RULE_LOCATION_PATTERN, exception);
+            throw new IllegalStateException("扫描 Drools 规则文件失败：" + RULE_LOCATION_PATTERN, exception);
         }
     }
 
@@ -96,11 +96,11 @@ public class RuleDecisionModule {
         try {
             var content = resource.getContentAsString(StandardCharsets.UTF_8);
             if (!StringUtils.hasText(content)) {
-                throw new IllegalStateException("Drools 规则内容不能为空: " + resourceName(resource));
+                throw new IllegalStateException("Drools 规则内容不能为空：" + resourceName(resource));
             }
             return content;
         } catch (IOException exception) {
-            throw new IllegalStateException("Drools 规则文件加载失败: " + resourceName(resource), exception);
+            throw new IllegalStateException("加载 Drools 规则文件失败：" + resourceName(resource), exception);
         }
     }
 

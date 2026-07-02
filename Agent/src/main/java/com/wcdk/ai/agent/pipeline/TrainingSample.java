@@ -8,9 +8,9 @@ import jakarta.validation.constraints.NotBlank;
  * @version 1.0
  **/
 public record TrainingSample(
-        @NotBlank(message = "message must not be blank.")
+        @NotBlank(message = "训练消息不能为空。")
         String message,
-        @NotBlank(message = "intent must not be blank.")
+        @NotBlank(message = "训练意图不能为空。")
         String intent
 ) {
 }
