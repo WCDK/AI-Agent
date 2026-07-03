@@ -12,11 +12,9 @@ wcdk:
     ollama:
       base-url: http://localhost:11434
       default-model: deepseek-r1:7b
-      models:
-        - qwen2.5-coder:7b
-        - deepseek-r1:7b
       route-models:
         chat: deepseek-r1:7b
+        coder: qwen2.5-coder:7b
       timeout-seconds: 120
     sd-webui:
       enabled: true

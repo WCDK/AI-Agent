@@ -10,6 +10,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 import com.wcdk.ai.agent.document.KnowledgeBaseService;
+import com.wcdk.ai.agent.pipeline.AgentPipeline;
+import com.wcdk.ai.agent.pipeline.PipelineResult;
 import com.wcdk.ai.config.WcdkProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ public class SimpleAiAgent {
     private final WcdkProperties properties;
     private final OllamaChatClient ollamaChatClient;
     private final OllamaModelRouter ollamaModelRouter;
+    private final AgentPipeline agentPipeline;
     private final KnowledgeBaseService knowledgeBaseService;
     private final ConcurrentMap<String, List<OllamaMessage>> sessions = new ConcurrentHashMap<>();
 
@@ -39,13 +42,14 @@ public class SimpleAiAgent {
             OllamaModelRouter ollamaModelRouter,
             SdWebuiClient sdWebuiClient,
             SdPromptEnhancer sdPromptEnhancer,
-            com.wcdk.ai.agent.pipeline.AgentPipeline agentPipeline,
+            AgentPipeline agentPipeline,
             KnowledgeBaseService knowledgeBaseService,
             EdgeTtsService edgeTtsService
     ) {
         this.properties = properties;
         this.ollamaChatClient = ollamaChatClient;
         this.ollamaModelRouter = ollamaModelRouter;
+        this.agentPipeline = agentPipeline;
         this.knowledgeBaseService = knowledgeBaseService;
     }
 
@@ -66,17 +70,17 @@ public class SimpleAiAgent {
                 ? request.sessionId()
                 : UUID.randomUUID().toString();
         var history = sessions.computeIfAbsent(sessionId, ignored -> new ArrayList<>());
-        var model = ollamaModelRouter.defaultTextModel();
-        log.info("调用模型===={}===========",model);
         var timeoutMillis = Duration.ofSeconds(properties.getAgent().getOllama().getTimeoutSeconds()).toMillis();
         var emitter = new SseEmitter(timeoutMillis);
+        PipelineResult pipelineResult;
 
         synchronized (history) {
             history.add(new OllamaMessage("user", request.message().trim()));
             trimHistory(history);
+            pipelineResult = agentPipeline.prepare(request.message(), ragSystemPrompt(request.message()), new ArrayList<>(history));
         }
 
-        CompletableFuture.runAsync(() -> streamTextResponse(emitter, sessionId, model, history, request.message()));
+        CompletableFuture.runAsync(() -> streamTextResponse(emitter, sessionId, history, request.message(), pipelineResult));
         return emitter;
     }
 
@@ -88,48 +92,54 @@ public class SimpleAiAgent {
                 ? request.sessionId()
                 : UUID.randomUUID().toString();
         var history = sessions.computeIfAbsent(sessionId, ignored -> new ArrayList<>());
-        var model = ollamaModelRouter.defaultTextModel();
-        log.info("user:{}================调用模型===={}===========",request.message(),model);
-        var messages = new ArrayList<OllamaMessage>();
-        messages.add(new OllamaMessage("system", ragSystemPrompt(request.message())));
+        PipelineResult pipelineResult;
 
         synchronized (history) {
             history.add(new OllamaMessage("user", request.message().trim()));
             trimHistory(history);
-            messages.addAll(history);
+            pipelineResult = agentPipeline.prepare(request.message(), ragSystemPrompt(request.message()), new ArrayList<>(history));
         }
 
-        var answer = stripThinking(ollamaChatClient.chat(model, messages));
+        var model = ollamaModelRouter.resolve(pipelineResult);
+        log.info("用户输入：{}，识别意图：{}，模型路由：{}，调用模型：{}",
+                request.message().substring(0,request.message().indexOf("\n")),
+                pipelineResult.inference().intent(),
+                pipelineResult.decision().modelRoute(),
+                model);
+        var answer = stripThinking(ollamaChatClient.chat(model, pipelineResult.messages()));
         synchronized (history) {
             history.add(new OllamaMessage("assistant", answer));
             trimHistory(history);
         }
-        return new ChatResponse(sessionId, model, "chat", answer);
+        agentPipeline.learn(sessionId, request.message(), pipelineResult.decision(), answer);
+        return new ChatResponse(sessionId, model, pipelineResult.decision().modelRoute(), answer);
     }
 
     private void streamTextResponse(
             SseEmitter emitter,
             String sessionId,
-            String model,
             List<OllamaMessage> history,
-            String userMessage
+            String userMessage,
+            PipelineResult pipelineResult
     ) {
         var rawAnswer = new StringBuilder();
-        var messages = new ArrayList<OllamaMessage>();
-        messages.add(new OllamaMessage("system", ragSystemPrompt(userMessage)));
-        synchronized (history) {
-            messages.addAll(history);
-        }
+        var model = ollamaModelRouter.resolve(pipelineResult);
+        var modelRoute = pipelineResult.decision().modelRoute();
+        log.info("用户输入：{}，识别意图：{}，模型路由：{}，调用模型：{}",
+                userMessage.substring(0,userMessage.indexOf("\n")),
+                pipelineResult.inference().intent(),
+                modelRoute,
+                model);
 
         try {
-            sendEvent(emitter, "meta", new ChatStreamEvent("meta", sessionId, model, "chat", ""));
-            ollamaChatClient.chatStream(model, messages, (eventType, content) -> {
+            sendEvent(emitter, "meta", new ChatStreamEvent("meta", sessionId, model, modelRoute, pipelineResult.traceSummary()));
+            ollamaChatClient.chatStream(model, pipelineResult.messages(), (eventType, content) -> {
                 if (!StringUtils.hasText(content)) {
                     return;
                 }
                 rawAnswer.append(content);
                 var type = "thinking".equals(eventType) ? "thinking" : "delta";
-                sendEvent(emitter, type, new ChatStreamEvent(type, sessionId, model, "chat", content));
+                sendEvent(emitter, type, new ChatStreamEvent(type, sessionId, model, modelRoute, content));
             });
 
             var answer = stripThinking(rawAnswer.toString());
@@ -137,11 +147,12 @@ public class SimpleAiAgent {
                 history.add(new OllamaMessage("assistant", answer));
                 trimHistory(history);
             }
-            sendEvent(emitter, "done", new ChatStreamEvent("done", sessionId, model, "chat", ""));
+            agentPipeline.learn(sessionId, userMessage, pipelineResult.decision(), answer);
+            sendEvent(emitter, "done", new ChatStreamEvent("done", sessionId, model, modelRoute, ""));
             emitter.complete();
         } catch (Exception exception) {
             try {
-                sendEvent(emitter, "error", new ChatStreamEvent("error", sessionId, model, "chat", exception.getMessage()));
+                sendEvent(emitter, "error", new ChatStreamEvent("error", sessionId, model, modelRoute, exception.getMessage()));
             } finally {
                 emitter.completeWithError(exception);
             }

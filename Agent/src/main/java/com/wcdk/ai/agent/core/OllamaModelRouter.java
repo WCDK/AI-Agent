@@ -1,6 +1,5 @@
 package com.wcdk.ai.agent.core;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -45,22 +44,11 @@ public class OllamaModelRouter {
     }
 
     private String configuredDefaultTextModel() {
-//        var ollama = properties.getAgent().getOllama();
-//        var models = ollama.getModels();
-//        if (models != null) {
-//            var configuredModel = models.stream()
-//                    .filter(StringUtils::hasText)
-//                    .findFirst()
-//                    .orElse("");
-//            if (StringUtils.hasText(configuredModel)) {
-//                return configuredModel;
-//            }
-//        }
-//        if (StringUtils.hasText(ollama.getDefaultModel())) {
-//            return ollama.getDefaultModel();
-//        }
-        return properties.getAgent().getOllama().getDefaultModel();
-//        return "";
+        var defaultModel = properties.getAgent().getOllama().getDefaultModel();
+        if (StringUtils.hasText(defaultModel)) {
+            return defaultModel.trim();
+        }
+        return "deepseek-r1:7b";
     }
 
     public String resolve(PipelineResult pipelineResult) {
@@ -69,17 +57,26 @@ public class OllamaModelRouter {
             return activeModel;
         }
 
-        var route = pipelineResult.decision().modelRoute();
+        if (pipelineResult == null || pipelineResult.decision() == null) {
+            return defaultTextModel();
+        }
 
         var inference = pipelineResult.inference();
-        if (inference.confidence() >= properties.getAgent().getOllama().getIntentSwitchConfidence()) {
-            var intentModel = findConfiguredModel(properties.getAgent().getOllama().getIntentModels(), inference.intent());
+        if (inference != null
+                && inference.confidence() >= properties.getAgent().getOllama().getIntentSwitchConfidence()) {
+            var intentModel = findConfiguredModel(
+                    properties.getAgent().getOllama().getIntentModels(),
+                    inference.intent()
+            );
             if (StringUtils.hasText(intentModel)) {
                 return intentModel;
             }
         }
 
-        var routeModel = findConfiguredModel(properties.getAgent().getOllama().getRouteModels(), route);
+        var routeModel = findConfiguredModel(
+                properties.getAgent().getOllama().getRouteModels(),
+                pipelineResult.decision().modelRoute()
+        );
         if (StringUtils.hasText(routeModel)) {
             return routeModel;
         }
@@ -91,19 +88,8 @@ public class OllamaModelRouter {
         if (configuredModels == null || !StringUtils.hasText(key)) {
             return "";
         }
-        var model = configuredModels.get(key);
-        if (!isAllowedModel(model)) {
-            return "";
-        }
-        return model;
+        var model = configuredModels.get(key.trim());
+        return StringUtils.hasText(model) ? model.trim() : "";
     }
 
-    private boolean isAllowedModel(String model) {
-        if (!StringUtils.hasText(model)) {
-            return false;
-        }
-
-        List<String> models = properties.getAgent().getOllama().getModels();
-        return models == null || models.isEmpty() || models.contains(model);
-    }
 }

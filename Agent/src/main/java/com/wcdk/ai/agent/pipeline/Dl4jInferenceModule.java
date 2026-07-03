@@ -40,7 +40,7 @@ public class Dl4jInferenceModule {
 
     private static final String MODEL_FILE_NAME = "ai-agent-intent-model.zip";
     private static final int FEATURE_COUNT = 7;
-    private static final String[] INTENTS = {"CHAT", "ANSWER_QUESTION", "EXECUTE_TASK", "DRAW_IMAGE"};
+    private static final String[] INTENTS = {"CHAT", "ANSWER_QUESTION", "EXECUTE_TASK", "CODE_TASK", "DRAW_IMAGE"};
 
     private final PerceptionModule perceptionModule;
     private final ObjectMapper objectMapper;
@@ -284,6 +284,16 @@ public class Dl4jInferenceModule {
                 new TrainingSample("fix this test failure", "EXECUTE_TASK"),
                 new TrainingSample("create vue page", "EXECUTE_TASK"),
                 new TrainingSample("delete all data", "EXECUTE_TASK"),
+                new TrainingSample("write a java controller", "CODE_TASK"),
+                new TrainingSample("generate code for a spring boot service", "CODE_TASK"),
+                new TrainingSample("modify this method to return json", "CODE_TASK"),
+                new TrainingSample("refactor this class", "CODE_TASK"),
+                new TrainingSample("create file 1.txt with aider", "CODE_TASK"),
+                new TrainingSample("在当前项目中创建一个接口", "CODE_TASK"),
+                new TrainingSample("帮我生成 Java 代码", "CODE_TASK"),
+                new TrainingSample("修改这个 Controller 的代码", "CODE_TASK"),
+                new TrainingSample("让 aider 创建文件", "CODE_TASK"),
+                new TrainingSample("修复这段代码的编译错误", "CODE_TASK"),
                 new TrainingSample("draw a cat in space", "DRAW_IMAGE"),
                 new TrainingSample("generate an image of a mountain lake", "DRAW_IMAGE"),
                 new TrainingSample("paint a futuristic city illustration", "DRAW_IMAGE"),

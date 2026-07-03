@@ -34,7 +34,6 @@ public class WcdkProperties {
     public static class Ollama {
         private String baseUrl;
         private String defaultModel;
-        private List<String> models = new ArrayList<>();
         private Map<String, String> routeModels = new LinkedHashMap<>();
         private Map<String, String> intentModels = new LinkedHashMap<>();
         private double intentSwitchConfidence = 0.6D;

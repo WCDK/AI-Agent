@@ -5,6 +5,20 @@ import com.wcdk.ai.agent.rules.DecisionResult
 
 global java.util.concurrent.atomic.AtomicReference decision;
 
+rule "intent code task"
+  salience 80
+  activation-group "decision"
+when
+  $i: InferenceResult(intent == "CODE_TASK")
+then
+  decision.set(new DecisionResult(
+    "CODE_TASK",
+    "coder",
+    "模型已将本次输入识别为编码任务。请使用 qwen2.5-coder:7b 处理，输出具体、可直接应用的代码修改方案。",
+    true
+  ));
+end
+
 rule "intent execute task"
   salience 70
   activation-group "decision"
