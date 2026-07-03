@@ -4,24 +4,24 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "Chat stream event")
+@Schema(description = "聊天流式事件")
 /**
  * @auther WCDK
  * @date 2026/6/10
  * @version 1.0
  **/
 public record ChatStreamEvent(
-        @Schema(description = "Event type: meta, thinking, delta, done, error")
+        @Schema(description = "事件类型：meta、thinking、delta、done、error")
         String type,
-        @Schema(description = "Session ID")
+        @Schema(description = "会话 ID")
         String sessionId,
-        @Schema(description = "Current model", example = "deepseek-r1:7b")
+        @Schema(description = "当前模型", example = "qwen2.5-coder:7b")
         String model,
-        @Schema(description = "Model route", example = "chat")
+        @Schema(description = "模型路由", example = "chat")
         String modelRoute,
-        @Schema(description = "Event content")
+        @Schema(description = "事件内容")
         String content,
-        @Schema(description = "Generated images")
+        @Schema(description = "生成的图片")
         List<GeneratedImage> images
 ) {
     public ChatStreamEvent(String type, String sessionId, String model, String modelRoute, String content) {

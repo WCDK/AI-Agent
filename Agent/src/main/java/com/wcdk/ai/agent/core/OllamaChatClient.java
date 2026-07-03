@@ -47,19 +47,19 @@ public class OllamaChatClient {
 
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                throw new IllegalStateException("Ollama request failed: HTTP " + response.statusCode() + " - " + response.body());
+                throw new IllegalStateException("Ollama 请求失败：HTTP " + response.statusCode() + " - " + response.body());
             }
 
             var chatResponse = objectMapper.readValue(response.body(), OllamaChatResponse.class);
             if (chatResponse.message() == null || chatResponse.message().content() == null) {
-                throw new IllegalStateException("Ollama response does not contain message content.");
+                throw new IllegalStateException("Ollama 响应中没有消息内容。");
             }
             return combineThinkingAndContent(chatResponse.message());
         } catch (IOException exception) {
-            throw new IllegalStateException("Failed to call Ollama. Confirm Ollama is running and the model is pulled.", exception);
+            throw new IllegalStateException("调用 Ollama 失败，请确认 Ollama 已启动且模型已拉取。", exception);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("Ollama request was interrupted.", exception);
+            throw new IllegalStateException("Ollama 请求被中断。", exception);
         }
     }
 
@@ -75,7 +75,7 @@ public class OllamaChatClient {
 
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofLines());
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                throw new IllegalStateException("Ollama stream request failed: HTTP " + response.statusCode());
+                throw new IllegalStateException("Ollama 流式请求失败：HTTP " + response.statusCode());
             }
 
             try (var lines = response.body()) {
@@ -101,10 +101,10 @@ public class OllamaChatClient {
                 }
             }
         } catch (IOException exception) {
-            throw new IllegalStateException("Failed to stream from Ollama. Confirm Ollama is running and the model is pulled.", exception);
+            throw new IllegalStateException("从 Ollama 获取流式响应失败，请确认 Ollama 已启动且模型已拉取。", exception);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("Ollama stream request was interrupted.", exception);
+            throw new IllegalStateException("Ollama 流式请求被中断。", exception);
         }
     }
 

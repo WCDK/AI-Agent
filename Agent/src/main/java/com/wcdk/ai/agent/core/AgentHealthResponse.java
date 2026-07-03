@@ -11,7 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record AgentHealthResponse(
         @Schema(description = "服务状态", example = "UP")
         String status,
-        @Schema(description = "当前使用的 Ollama 模型", example = "deepseek-r1:7b")
+        @Schema(description = "当前 Ollama 模型", example = "qwen2.5-coder:7b")
         String model,
         @Schema(description = "Ollama 服务地址", example = "http://localhost:11434")
         String ollamaBaseUrl

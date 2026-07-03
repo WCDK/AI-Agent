@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * @auther WCDK
- * @date 2026/6/10
+ * @date 2026/7/2
  * @version 1.0
  **/
 @Component
@@ -48,7 +48,7 @@ public class OllamaDatasetBuilder {
         var content = chunk.content();
 
         records.add(new DatasetRecord(
-                "你现在学习一份资料，请记住以下内容。",
+                "请学习并记住以下资料内容。",
                 "资料《" + sourceName + "》第 " + chunk.index() + " 段内容如下：\n" + content
         ));
         records.add(new DatasetRecord(
@@ -56,8 +56,8 @@ public class OllamaDatasetBuilder {
                 "资料《" + sourceName + "》第 " + chunk.index() + " 段要点如下：\n" + summarize(content)
         ));
         records.add(new DatasetRecord(
-                "请根据学习资料回答问题时遵循原文。",
-                "已学习资料《" + sourceName + "》第 " + chunk.index() + " 段，回答相关问题时应优先依据这段内容：\n" + content
+                "请根据已学习资料回答相关问题。",
+                "回答相关问题时，请优先依据资料《" + sourceName + "》第 " + chunk.index() + " 段：\n" + content
         ));
 
         return List.copyOf(records);
@@ -67,7 +67,7 @@ public class OllamaDatasetBuilder {
         if (content.length() <= 220) {
             return content;
         }
-        return content.substring(0, 220) + "……";
+        return content.substring(0, 220) + "...";
     }
 
     private record DatasetRecord(

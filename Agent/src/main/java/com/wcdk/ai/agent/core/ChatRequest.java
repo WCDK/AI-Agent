@@ -10,10 +10,10 @@ import jakarta.validation.constraints.NotBlank;
  * @version 1.0
  **/
 public record ChatRequest(
-        @Schema(description = "会话 ID，留空时自动创建新会话", example = "204cee67-2d85-4df3-9b1d-b9e56647875f")
+        @Schema(description = "会话 ID，留空时自动创建新会话。", example = "204cee67-2d85-4df3-9b1d-b9e56647875f")
         String sessionId,
         @NotBlank(message = "消息内容不能为空。")
-        @Schema(description = "用户消息。系统会根据规则自动判断走聊天模型还是图片模型", example = "请画一只坐在月球上的橘猫", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "用户消息。", example = "用三句话解释什么是 AI Agent。", requiredMode = Schema.RequiredMode.REQUIRED)
         String message
 ) {
 }

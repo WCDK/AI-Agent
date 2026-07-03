@@ -7,22 +7,15 @@ spring:
 server:
   port: 28081
 
-springdoc:
-  api-docs:
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-
 wcdk:
   agent:
     ollama:
       base-url: http://localhost:11434
-      models:
-        - deepseek-r1:7b
+      default-model: deepseek-r1:7b
       route-models:
-        chat: deepseek-r1
+        chat: deepseek-r1:7b
+        coder: qwen2.5-coder:7b
       timeout-seconds: 120
-      training-model-prefix: deepseek-r1-wcdk
     sd-webui:
       enabled: true
       base-url: http://127.0.0.1:7860
@@ -45,8 +38,6 @@ wcdk:
       timeout-seconds: 30
       max-text-length: 2000
   rules:
-    drools:
-      decision-rule-path: classpath:rules/rules.drl
     model: D:/Dl4jSource
   document:
     source-directory: D:/dssource

@@ -32,20 +32,19 @@ public class WcdkProperties {
 
     @Data
     public static class Ollama {
-        private String baseUrl = "http://localhost:11434";
-        private String model = "deepseek-r1:7b";
-        private List<String> models = new ArrayList<>(List.of("deepseek-r1:7b"));
+        private String baseUrl;
+        private String defaultModel;
         private Map<String, String> routeModels = new LinkedHashMap<>();
         private Map<String, String> intentModels = new LinkedHashMap<>();
         private double intentSwitchConfidence = 0.6D;
         private long timeoutSeconds = 120;
-        private String trainingModelPrefix = "deepseek-r1-doc";
+        private String trainingModelPrefix;
     }
 
     @Data
     public static class Tts {
-        private String command = "edge-tts";
-        private String voice = "zh-CN-XiaoxiaoNeural";
+        private String command;
+        private String voice;
         private int timeoutSeconds = 30;
         private int maxTextLength = 2000;
     }
@@ -53,8 +52,8 @@ public class WcdkProperties {
     @Data
     public static class SdWebui {
         private boolean enabled = true;
-        private String baseUrl = "http://127.0.0.1:7860";
-        private String webuiDirectory = "E:/ollama/sd.webui";
+        private String baseUrl;
+        private String webuiDirectory;
         private long timeoutSeconds = 300;
         private int width = 512;
         private int height = 512;
@@ -67,18 +66,12 @@ public class WcdkProperties {
 
     @Data
     public static class Rules {
-        private final Drools drools = new Drools();
         private String model = "/Dl4jSource";
     }
 
     @Data
-    public static class Drools {
-        private String decisionRulePath = "classpath:rules/rules.drl";
-    }
-
-    @Data
     public static class Document {
-        private String sourceDirectory = "D:/dssource";
+        private String sourceDirectory;
         private int chunkSize = 900;
         private int chunkOverlap = 120;
     }

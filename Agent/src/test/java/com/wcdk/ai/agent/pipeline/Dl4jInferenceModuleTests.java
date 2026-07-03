@@ -33,13 +33,17 @@ class Dl4jInferenceModuleTests {
                 new TrainingSample("hello, just chat", "CHAT"),
                 new TrainingSample("what is a rule engine?", "ANSWER_QUESTION"),
                 new TrainingSample("implement a user login api", "EXECUTE_TASK"),
-                new TrainingSample("fix the failing unit test", "EXECUTE_TASK")
+                new TrainingSample("fix the failing unit test", "EXECUTE_TASK"),
+                new TrainingSample("draw a cat in space", "DRAW_IMAGE"),
+                new TrainingSample("generate an image of a mountain lake", "DRAW_IMAGE")
         ), 250, tempDir);
 
         assertIntent("hello, just chat", "CHAT");
         assertIntent("what is a rule engine?", "ANSWER_QUESTION");
         assertIntent("implement a user login api", "EXECUTE_TASK");
         assertIntent("fix the failing unit test", "EXECUTE_TASK");
+        assertIntent("draw a cat in space", "DRAW_IMAGE");
+        assertIntent("generate an image of a mountain lake", "DRAW_IMAGE");
     }
 
     @Test

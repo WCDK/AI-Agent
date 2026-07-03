@@ -1,16 +1,16 @@
 package com.wcdk.ai.agent.document;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.stereotype.Component;
+
 /**
  * @auther WCDK
- * @date 2026/6/10
+ * @date 2026/7/2
  * @version 1.0
  **/
 @Component
@@ -48,7 +48,7 @@ public class OllamaModelTrainer {
         var builder = new StringBuilder();
         builder.append("FROM ").append(baseModel).append(System.lineSeparator());
         builder.append("SYSTEM \"\"\"").append(System.lineSeparator());
-        builder.append("你是一个基于企业资料进行回答的中文助手。回答时优先依据已学习资料，不确定时明确说明。")
+        builder.append("你是一个基于企业资料回答问题的中文助手。回答时优先依据已学习资料，不确定时请明确说明。")
                 .append(System.lineSeparator());
         builder.append("\"\"\"").append(System.lineSeparator());
 

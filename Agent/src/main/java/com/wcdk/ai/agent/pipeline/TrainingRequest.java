@@ -11,7 +11,7 @@ import jakarta.validation.constraints.NotEmpty;
  * @version 1.0
  **/
 public record TrainingRequest(
-        @NotEmpty(message = "samples must not be empty.")
+        @NotEmpty(message = "训练样本不能为空。")
         List<@Valid TrainingSample> samples,
         Integer epochs,
         String outputDirectory

@@ -9,9 +9,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @version 1.0
  **/
 public record ChatResponse(
-        @Schema(description = "会话 ID，后续连续对话需要传回该值")
+        @Schema(description = "会话 ID")
         String sessionId,
-        @Schema(description = "当前实际使用的模型", example = "deepseek-r1:7b")
+        @Schema(description = "本次响应使用的模型", example = "qwen2.5-coder:7b")
         String model,
         @Schema(description = "模型路由", example = "chat")
         String modelRoute,
